@@ -392,7 +392,7 @@ export function WeeklyWorkoutPlanner({
                               <GripVertical />
                               <button
                                 type="button"
-                                className="text-left w-full flex gap-2 cursor-pointer"
+                                className="text-left w-full flex gap-2 cursor-pointer items-center"
                                 onClick={() =>
                                   openWorkoutDetailsDrawer(workout)
                                 }
@@ -400,7 +400,7 @@ export function WeeklyWorkoutPlanner({
                                 <p className="font-semibold text-base-content cursor-pointer">
                                   {workout.name}
                                 </p>
-                                <Info />
+                                <Info className="hidden md:block" />
                               </button>
                             </div>
                             <div className="mt-3 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.24em] text-base-content/50">
@@ -431,16 +431,18 @@ export function WeeklyWorkoutPlanner({
                     ))
                   )}
                 </div>
-                <button
-                  type="button"
-                  className="border border-dashed border-base-300/40 mt-4 flex items-center justify-center rounded-3xl p-4 text-sm text-base-content/50 transition-colors hover:border-primary/60 cursor-pointer w-full"
-                  onClick={openAddWorkoutModal}
-                >
-                  <Plus />
-                  <span className="ml-2 text-sm text-base-content/50">
-                    Add workout
-                  </span>
-                </button>
+                {dayWorkouts.length <= 5 && (
+                  <button
+                    type="button"
+                    className="border border-dashed border-base-300/40 mt-4 flex items-center justify-center rounded-3xl p-4 text-sm text-base-content/50 transition-colors hover:border-primary/60 cursor-pointer w-full"
+                    onClick={openAddWorkoutModal}
+                  >
+                    <Plus />
+                    <span className="ml-2 text-sm text-base-content/50">
+                      Add workout
+                    </span>
+                  </button>
+                )}
               </div>
             );
           })}

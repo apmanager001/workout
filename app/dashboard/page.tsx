@@ -22,8 +22,8 @@ export default async function DashboardPage() {
     : { startDay: today, days: [] };
 
   return (
-    <section className="section-shell py-8 lg:py-14">
-      <div className="glass-panel rounded-3xl border border-base-300/70 lg:shadow-xl shadow-primary/50 px-4">
+    <section className="py-0 lg:py-14 section-shell">
+      <div className="glass-panel lg:rounded-3xl border border-base-300/70 lg:shadow-xl shadow-primary/50 px-0 lg:px-4">
         {/* <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
             <h1 className="mt-5 text-balance font-display text-4xl font-semibold tracking-tight text-base-content sm:text-5xl">
@@ -35,9 +35,6 @@ export default async function DashboardPage() {
         <div className="mt-8">
           <WeeklyWorkoutPlanner initialLayoutDays={initialLayout.days} />
         </div>
-        {/* <div className="mt-8">
-          <UserWorkoutManager />
-        </div> */}
       </div>
     </section>
   );

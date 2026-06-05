@@ -140,9 +140,9 @@ a {
 }
 
 .section-shell {
-  margin-inline: auto;
+  margin-inline: 0rem;
   max-width: 80rem;
-  padding-inline: 1rem;
+  padding-inline: 0rem;
 }
 
 .text-balance {
@@ -151,6 +151,8 @@ a {
 
 @media (min-width: 640px) {
   .section-shell {
+    margin-inline: auto;
+    max-width: 80rem;
     padding-inline: 1.5rem;
   }
 }
