@@ -24,12 +24,21 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
+function isAdminUser(user: unknown): user is { admin: true } {
+  return (
+    typeof user === "object" &&
+    user !== null &&
+    "admin" in user &&
+    (user as { admin?: unknown }).admin === true
+  );
+}
+
 export function SiteHeader() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session, isPending } = authClient.useSession();
   const isAuthenticated = Boolean(session?.user);
-  const isAdmin = Boolean((session?.user as any)?.admin);
+  const isAdmin = isAdminUser(session?.user);
 
   return (
     <header className="sticky top-0 z-40">

@@ -43,13 +43,17 @@ export const auth = betterAuth({
       await connectMongoose();
 
       const profile = await UserProfileModel.findOne({ authUserId }).lean();
+      const sessionUser = session.user as Record<string, unknown>;
+      const sessionRoles = Array.isArray(sessionUser.roles)
+        ? sessionUser.roles.filter((role): role is string => typeof role === "string")
+        : undefined;
 
       return {
         ...session,
         user: {
           ...session.user,
           admin: Boolean(profile?.admin),
-          roles: profile?.roles ?? (session.user as any)?.roles ?? ["member"],
+          roles: profile?.roles ?? sessionRoles ?? ["member"],
         },
       };
     }),

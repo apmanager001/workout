@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, GripVertical, Info, Plus, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatDate } from "@/components/ui/format";
@@ -88,13 +88,7 @@ export function WeeklyWorkoutPlanner({
   const [logIntensity, setLogIntensity] = useState("");
   const [isAddWorkoutModalOpen, setIsAddWorkoutModalOpen] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-    setWeekDates(getWeekDates());
-    fetchLayout();
-  }, []);
-
-  async function fetchLayout() {
+  const fetchLayout = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -114,7 +108,21 @@ export function WeeklyWorkoutPlanner({
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
+
+  const initializePlanner = useCallback(() => {
+    setIsMounted(true);
+    setWeekDates(getWeekDates());
+    void fetchLayout();
+  }, [fetchLayout]);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      initializePlanner();
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [initializePlanner]);
 
   async function patchLayout(days: WeeklyLayoutDay[]) {
     const payload = {

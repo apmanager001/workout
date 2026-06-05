@@ -55,24 +55,34 @@ async function ensureUserDays(authUserId: string) {
   await UserWeeklyLayoutDayModel.bulkWrite(ops, { ordered: false });
 }
 
-function mapWorkout(workout: any): WeeklyLayoutWorkout | null {
-  if (!workout || !workout._id || !workout.slug || !workout.name) {
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function mapWorkout(workout: unknown): WeeklyLayoutWorkout | null {
+  if (!isObject(workout)) {
+    return null;
+  }
+
+  const { _id, slug, name, type, equipment, targetMuscles, description, youtube } = workout;
+
+  if (!_id || !slug || !name) {
     return null;
   }
 
   return {
-    _id: String(workout._id),
-    slug: String(workout.slug),
-    name: String(workout.name),
-    type: workout.type === "cardio" ? "cardio" : "weight",
-    equipment: Array.isArray(workout.equipment)
-      ? workout.equipment.map((item: any) => String(item))
+    _id: String(_id),
+    slug: String(slug),
+    name: String(name),
+    type: type === "cardio" ? "cardio" : "weight",
+    equipment: Array.isArray(equipment)
+      ? equipment.map((item) => String(item))
       : [],
-    targetMuscles: Array.isArray(workout.targetMuscles)
-      ? workout.targetMuscles.map((item: any) => String(item))
+    targetMuscles: Array.isArray(targetMuscles)
+      ? targetMuscles.map((item) => String(item))
       : [],
-    description: String(workout.description ?? ""),
-    youtube: workout.youtube ? String(workout.youtube) : undefined,
+    description: String(description ?? ""),
+    youtube: youtube ? String(youtube) : undefined,
   };
 }
 
@@ -82,20 +92,24 @@ export async function getUserWeeklyLayoutFromStartDay(
 ) {
   await ensureUserDays(authUserId);
 
-  const dayDocs = await UserWeeklyLayoutDayModel.find({ authUserId })
+  const dayDocs = (await UserWeeklyLayoutDayModel.find({ authUserId })
     .sort({ dayOfWeek: 1 })
     .populate({
       path: "workouts",
       select: "slug name type equipment targetMuscles description youtube",
     })
-    .lean();
+    .lean()) as Array<{
+    authUserId: string;
+    dayOfWeek: number;
+    workouts: unknown[] | unknown;
+  }>;
 
   const byDay = new Map<number, WeeklyLayoutDay>();
 
   for (const dayDoc of dayDocs) {
     const workouts = Array.isArray(dayDoc.workouts)
       ? dayDoc.workouts
-          .map((workout: any) => mapWorkout(workout))
+          .map(mapWorkout)
           .filter(
             (
               workout: WeeklyLayoutWorkout | null,

@@ -1,6 +1,6 @@
 import { connectMongoose } from "@/lib/backend/mongoose/connection";
 import { WorkoutModel } from "@/lib/backend/mongoose/schemas/workout";
-import { workouts as sampleWorkouts, type Workout } from "@/lib/workouts/data";
+import { workouts as sampleWorkouts } from "@/lib/workouts/data";
 
 export async function getAllWorkouts() {
   await connectMongoose();

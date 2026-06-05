@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Dumbbell, Flame, Sparkles } from "lucide-react";
+import { ArrowRight, Dumbbell, Flame } from "lucide-react";
 import type { Workout } from "@/lib/workouts/data";
 
 export function WorkoutCard({ workout }: { workout: Workout }) {

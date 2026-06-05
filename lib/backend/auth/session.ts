@@ -23,6 +23,15 @@ export async function requireServerSession() {
   return session;
 }
 
+function isAdminUser(user: unknown): user is { admin: true } {
+  return (
+    typeof user === "object" &&
+    user !== null &&
+    "admin" in user &&
+    (user as { admin?: unknown }).admin === true
+  );
+}
+
 export async function requireAdminSession() {
   const session = await getServerSession();
 
@@ -31,7 +40,7 @@ export async function requireAdminSession() {
   }
 
   const authUserId = getAuthUserId(session);
-  if (!authUserId || !(session.user as any)?.admin) {
+  if (!authUserId || !isAdminUser(session.user)) {
     redirect("/");
   }
 
