@@ -1,10 +1,14 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { customSession } from "better-auth/plugins";
 import {
   connectMongoClient,
   getMongoClient,
   getMongoDatabase,
 } from "./lib/backend/mongodb/client";
+import { connectMongoose } from "./lib/backend/mongoose/connection";
+import { UserProfileModel } from "./lib/backend/mongoose/schemas/user-profile";
+
 
 const fallbackAuthSecret =
   "foundry-stack-dev-secret-change-me-before-production-2026";
@@ -28,4 +32,26 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  plugins: [
+    customSession(async (session) => {
+      const authUserId = session.user.id ?? session.user.email ?? "";
+
+      if (!authUserId) {
+        return session;
+      }
+
+      await connectMongoose();
+
+      const profile = await UserProfileModel.findOne({ authUserId }).lean();
+
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          admin: Boolean(profile?.admin),
+          roles: profile?.roles ?? (session.user as any)?.roles ?? ["member"],
+        },
+      };
+    }),
+  ],
 });

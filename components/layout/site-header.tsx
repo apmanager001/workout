@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Orbit, Sparkles, X } from "lucide-react";
+import {
+  Menu,
+  Orbit,
+  X,
+  UserRound,
+  Settings2,
+  Shield,
+  LayoutDashboard,
+} from "lucide-react";
 import { useState } from "react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { authClient } from "@/lib/auth/client";
@@ -21,6 +29,7 @@ export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session, isPending } = authClient.useSession();
   const isAuthenticated = Boolean(session?.user);
+  const isAdmin = Boolean((session?.user as any)?.admin);
 
   return (
     <header className="sticky top-0 z-40">
@@ -37,7 +46,7 @@ export function SiteHeader() {
                     {siteConfig.name}
                   </p>
                   <p className="text-xs uppercase tracking-[0.24em] text-base-content/45">
-                    Next + Auth + Data
+                    Train smarter. Log faster.
                   </p>
                 </div>
               </Link>
@@ -65,13 +74,56 @@ export function SiteHeader() {
             </nav>
 
             <div className="hidden items-center gap-3 md:flex">
-              <div className="hidden items-center gap-2 rounded-full border border-base-300/60 bg-base-100/80 px-3 py-2 text-xs uppercase tracking-[0.2em] text-base-content/50 xl:flex">
-                <Sparkles className="h-4 w-4 text-accent-content" />
-                Template ready
-              </div>
-
               {isPending ? null : isAuthenticated ? (
-                <SignOutButton className="btn-sm px-5" />
+                <div className="dropdown dropdown-end">
+                  <button
+                    type="button"
+                    tabIndex={0}
+                    className="btn btn-ghost btn-circle border border-base-300/60 bg-base-100/80"
+                    aria-label="Open account menu"
+                  >
+                    <UserRound className="h-5 w-5" />
+                  </button>
+
+                  <ul
+                    tabIndex={0}
+                    className="menu menu-sm dropdown-content z-20 mt-3 w-52 rounded-2xl border border-base-300/70 bg-base-100 p-2 shadow-lg shadow-primary/10 gap-2"
+                  >
+                    <li className="hover:bg-primary/40 rounded-xl">
+                      <Link
+                        href="/dashboard"
+                        className="rounded-xl px-3 py-3 font-extrabold hover:text-white"
+                      >
+                        <LayoutDashboard className="h-4 w-4 text-accent-content" />
+                        Dashboard
+                      </Link>
+                    </li>
+                    
+                    <li className="hover:bg-primary/40 rounded-xl">
+                      <Link
+                        href="/settings"
+                        className="rounded-xl px-3 py-3 font-extrabold hover:text-white"
+                      >
+                        <Settings2 className="h-4 w-4 text-accent-content" />
+                        Settings
+                      </Link>
+                    </li>{
+                    isAdmin ? (
+                      <li className="hover:bg-primary/40 rounded-xl">
+                        <Link
+                          href="/admin"
+                          className="rounded-xl px-3 py-3 font-extrabold hover:text-white"
+                        >
+                          <Shield className="h-4 w-4 text-accent-content" />
+                          Admin
+                        </Link>
+                      </li>
+                    ) : null}
+                    <li>
+                      <SignOutButton className="w-full" />
+                    </li>
+                  </ul>
+                </div>
               ) : (
                 <>
                   <Link

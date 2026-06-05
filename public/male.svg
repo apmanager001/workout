@@ -1,0 +1,39 @@
+<svg viewBox="0 0 300 600" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Shoulders -->
+  <path id="left-shoulder" d="M95 115 Q110 90 130 115 Q115 130 95 115" fill="#e5e5e5"/>
+  <path id="right-shoulder" d="M205 115 Q190 90 170 115 Q185 130 205 115" fill="#e5e5e5"/>
+
+  <!-- Chest -->
+  <path id="left-chest" d="M120 130 Q140 110 150 130 L150 165 Q135 175 120 165 Z" fill="#e5e5e5"/>
+  <path id="right-chest" d="M150 130 Q160 110 180 130 L180 165 Q165 175 150 165 Z" fill="#e5e5e5"/>
+
+  <!-- Abs -->
+  <path id="upper-abs" d="M130 165 L170 165 L170 200 Q150 210 130 200 Z" fill="#e5e5e5"/>
+  <path id="mid-abs" d="M130 200 L170 200 L170 235 Q150 245 130 235 Z" fill="#e5e5e5"/>
+  <path id="lower-abs" d="M130 235 L170 235 L170 270 Q150 280 130 270 Z" fill="#e5e5e5"/>
+
+  <!-- Obliques -->
+  <path id="left-oblique" d="M120 165 L110 230 L130 260 L130 200 Z" fill="#e5e5e5"/>
+  <path id="right-oblique" d="M180 165 L190 230 L170 260 L170 200 Z" fill="#e5e5e5"/>
+
+  <!-- Arms -->
+  <path id="left-bicep" d="M95 140 L80 200 L95 240 L110 200 Z" fill="#e5e5e5"/>
+  <path id="right-bicep" d="M205 140 L220 200 L205 240 L190 200 Z" fill="#e5e5e5"/>
+
+  <path id="left-forearm" d="M80 200 L70 260 L85 300 L95 240 Z" fill="#e5e5e5"/>
+  <path id="right-forearm" d="M220 200 L230 260 L215 300 L205 240 Z" fill="#e5e5e5"/>
+
+  <!-- Hips -->
+  <path id="hips" d="M125 270 L175 270 L185 300 L115 300 Z" fill="#e5e5e5"/>
+
+  <!-- Quads -->
+  <path id="left-quad" d="M125 300 L145 300 L150 380 L130 380 Z" fill="#e5e5e5"/>
+  <path id="right-quad" d="M155 300 L175 300 L170 380 L150 380 Z" fill="#e5e5e5"/>
+
+  <!-- Calves -->
+  <path id="left-calf" d="M130 380 L150 380 L155 500 L135 500 Z" fill="#e5e5e5"/>
+  <path id="right-calf" d="M150 380 L170 380 L165 500 L145 500 Z" fill="#e5e5e5"/>
+
+</svg>
+

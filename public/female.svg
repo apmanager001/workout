@@ -1,0 +1,22 @@
+<svg viewBox="0 0 300 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Chest / Upper torso -->
+  <path id="chest" d="M120 130 Q150 100 180 130 L180 180 Q150 200 120 180 Z" fill="#e5e5e5"/>
+
+  <!-- Abs -->
+  <path id="abs" d="M130 180 L170 180 L170 260 Q150 280 130 260 Z" fill="#e5e5e5"/>
+
+  <!-- Left Arm -->
+  <path id="left-arm" d="M100 140 L80 210 L90 260 L110 210 Z" fill="#e5e5e5"/>
+
+  <!-- Right Arm -->
+  <path id="right-arm" d="M200 140 L220 210 L210 260 L190 210 Z" fill="#e5e5e5"/>
+
+  <!-- Hips / Glutes -->
+  <path id="glutes" d="M125 260 L175 260 L185 310 L115 310 Z" fill="#e5e5e5"/>
+
+  <!-- Quads -->
+  <path id="quads" d="M130 310 L170 310 L180 380 L120 380 Z" fill="#e5e5e5"/>
+
+  <!-- Calves -->
+  <path id="calves" d="M130 380 L170 380 L175 500 L125 500 Z" fill="#e5e5e5"/>
+</svg>

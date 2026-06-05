@@ -28,6 +28,10 @@ const userProfileSchema = new Schema(
       type: [String],
       default: ["member"],
     },
+    admin: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

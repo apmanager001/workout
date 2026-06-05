@@ -13,8 +13,8 @@ export function SiteFooter() {
               {siteConfig.name}
             </p>
             <p className="mt-3 max-w-xl leading-7 text-base-content/68">
-              A reusable starting point for polished authenticated apps with
-              Next.js, Better Auth, TanStack Query, and MongoDB.
+              A workout-first app shell with training planning, auth, and an
+              exercise catalog built for mobile and web.
             </p>
           </div>
 

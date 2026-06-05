@@ -2,94 +2,50 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
-  Blocks,
-  DatabaseZap,
-  LayoutTemplate,
+  Dumbbell,
+  Flame,
   ShieldCheck,
   Sparkles,
-  Workflow,
 } from "lucide-react";
 import { JsonLd } from "@/components/seo/json-ld";
+import { WorkoutCard } from "@/components/workout/workout-card";
 import { siteConfig } from "@/lib/config/site";
+import { workouts } from "@/lib/workouts/data";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Next.js template with Better Auth, MongoDB, and DaisyUI",
+  title: "Workout Forge",
   description:
-    "Clone a production-ready Next.js template with Better Auth, MongoDB, Mongoose, DaisyUI, TanStack Query, Google Analytics, and strong SEO already wired.",
+    "Workout Forge is a dark-mode training planner with exercise details, weekly logging, and admin-managed workouts.",
   path: "/",
   keywords: [
     ...siteConfig.keywords,
-    "Next.js boilerplate",
-    "full-stack starter template",
-    "Google Analytics setup",
+    "workout planner",
+    "training log",
+    "exercise library",
   ],
 });
 
 const featureCards = [
   {
-    title: "Shared foundation",
+    title: "7-day workout planner",
     description:
-      "A polished homepage, sticky header, and footer are already in place so new projects start from a finished-feeling shell.",
-    icon: LayoutTemplate,
-  },
-  {
-    title: "Auth-ready routes",
-    description:
-      "Login and register experiences are wired to Better Auth client calls, with an App Router handler ready for the server side.",
+      "Schedule training sessions from Sunday through Saturday with a clear day-by-day exercise view.",
     icon: ShieldCheck,
   },
   {
-    title: "Clean data layer",
+    title: "Workout library",
     description:
-      "MongoDB, Mongoose, and TanStack Query utilities live in predictable folders so feature work stays organized.",
-    icon: DatabaseZap,
-  },
-] as const;
-
-const workflowPillars = [
-  {
-    title: "Backend utilities",
-    description:
-      "Auth wiring, MongoDB access, and Mongoose connection helpers live under one backend surface instead of leaking into pages.",
+      "Browse strength and cardio routines with equipment, target muscles, and coaching notes.",
+    icon: Dumbbell,
   },
   {
-    title: "Schema-first growth",
+    title: "Smart logging",
     description:
-      "A starter Mongoose schema is in place so product data has an obvious home as the app evolves.",
-  },
-  {
-    title: "Query boundaries",
-    description:
-      "TanStack Query hooks and keys are split from components, making fetch logic reusable across dashboards and settings pages.",
+      "Prepare to adapt the form experience to weight and cardio workouts as users log sets and sessions.",
+    icon: Flame,
   },
 ] as const;
-
-const folderTree = [
-  "app/",
-  "  api/auth/[...all]/route.ts",
-  "  dashboard/page.tsx",
-  "  login/page.tsx",
-  "  register/page.tsx",
-  "  robots.ts",
-  "  sitemap.ts",
-  "  opengraph-image.tsx",
-  "components/layout/",
-  "components/auth/",
-  "components/analytics/",
-  "components/providers/",
-  "lib/backend/auth/",
-  "lib/backend/mongodb/",
-  "lib/backend/mongoose/schemas/",
-  "lib/seo/",
-  "lib/tanstack/queries/",
-] as const;
-
-const heroStats = [
-  { label: "UI shell", value: "Global header + footer" },
-  { label: "Auth", value: "Better Auth route" },
-  { label: "SEO", value: "OG + robots + sitemap" },
-];
 
 const homeJsonLd = [
   {
@@ -122,17 +78,17 @@ export default function Home() {
         <div className="space-y-8">
           <div className="badge badge-outline badge-lg gap-2 rounded-full border-primary/30 bg-base-100/80 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">
             <Sparkles className="h-4 w-4" />
-            Future project starter
+            Workout planner built on a strong app shell
           </div>
 
           <div className="space-y-5">
             <h1 className="text-balance font-display text-5xl font-semibold tracking-tight text-base-content sm:text-6xl lg:text-7xl">
-              Ship the product idea, not the setup tax.
+              Track your training week with modern workout flow.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-base-content/72 sm:text-xl">
-              {siteConfig.name} gives you a strong public shell, custom DaisyUI
-              styling, auth entry points, and a clean data structure before the
-              first real feature lands.
+              Workout Forge brings workout scheduling, a public exercise
+              catalog, and protected user views together with auth, MongoDB, and
+              polished dark mode styling.
             </p>
           </div>
 
@@ -145,24 +101,24 @@ export default function Home() {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/login"
+              href="/workouts"
               className="btn btn-ghost btn-lg rounded-full border border-base-300/70 bg-base-100/75 px-7"
             >
-              Open login
+              View workouts
             </Link>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            {heroStats.map((stat) => (
+            {featureCards.map((feature) => (
               <div
-                key={stat.label}
+                key={feature.title}
                 className="glass-panel rounded-xl border border-base-300/70 p-4 shadow-lg shadow-primary/5"
               >
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">
-                  {stat.label}
+                  {feature.title}
                 </p>
-                <p className="mt-2 text-lg font-semibold text-base-content">
-                  {stat.value}
+                <p className="mt-2 leading-7 text-base-content/70">
+                  {feature.description}
                 </p>
               </div>
             ))}
@@ -175,146 +131,60 @@ export default function Home() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">
-                  Starter preview
+                  Workout library
                 </p>
                 <h2 className="mt-2 font-display text-2xl font-semibold text-base-content">
-                  A refined baseline for authenticated apps
+                  Build every training day from a curated exercise catalog.
                 </h2>
               </div>
               <span className="badge badge-accent badge-outline rounded-full inline-flex items-center px-4 py-2 font-medium leading-none whitespace-nowrap">
-                Ready to fork
+                Mobile friendly
               </span>
             </div>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <div className="rounded-xl bg-base-100/85 p-5 shadow-md shadow-primary/5 ring-1 ring-base-300/70">
                 <p className="text-sm font-semibold text-base-content">
-                  Homepage shell
+                  Public exercises
                 </p>
                 <p className="mt-2 text-sm leading-6 text-base-content/68">
-                  Designed hero, feature grid, sticky navigation, and a footer
-                  that holds up across future projects.
+                  Each workout has equipment, target muscles, and guidance for
+                  cardio or weight sessions.
                 </p>
               </div>
               <div className="rounded-xl bg-base-100/85 p-5 shadow-md shadow-primary/5 ring-1 ring-base-300/70">
                 <p className="text-sm font-semibold text-base-content">
-                  Auth surface
+                  Protected pages
                 </p>
                 <p className="mt-2 text-sm leading-6 text-base-content/68">
-                  Login and registration views are ready to point at Better Auth
-                  with a MongoDB-backed route handler.
+                  Authenticated dashboard and settings are ready for your user
+                  sessions and workout logging flows.
                 </p>
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-xl bg-neutral p-5 text-neutral-content shadow-xl shadow-neutral/15">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-neutral-content/55">
-                Stack baked in
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {siteConfig.stack.map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-white/12 bg-white/8 px-3 py-2 text-sm"
-                  >
-                    {item}
-                  </span>
-                ))}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="section-shell mt-16 grid gap-5 lg:grid-cols-3">
-        {featureCards.map(({ title, description, icon: Icon }) => (
-          <article
-            key={title}
-            className="glass-panel rounded-[1.75rem] border border-base-300/70 p-6 shadow-lg shadow-primary/5"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary/12 text-secondary">
-              <Icon className="h-5 w-5" />
-            </div>
-            <h2 className="mt-5 font-display text-2xl font-semibold text-base-content">
-              {title}
+      <section className="section-shell py-10 lg:py-14">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">
+              Featured workouts
+            </p>
+            <h2 className="text-3xl font-semibold tracking-tight text-base-content sm:text-4xl">
+              Ten workouts to start your weekly training plan.
             </h2>
-            <p className="mt-3 leading-7 text-base-content/70">{description}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="section-shell mt-16 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-        <div className="glass-panel rounded-2xl border border-base-300/70 p-7 shadow-lg shadow-primary/5">
-          <div className="badge badge-outline rounded-full border-secondary/30 bg-base-100/70 px-4 py-4 text-xs uppercase tracking-[0.22em] text-secondary">
-            <Workflow className="mr-2 h-4 w-4" />
-            How it is organized
           </div>
-          <h2 className="mt-5 text-balance font-display text-4xl font-semibold tracking-tight text-base-content">
-            The app structure should stay obvious when the codebase grows.
-          </h2>
-          <p className="mt-4 max-w-xl leading-7 text-base-content/72">
-            The template separates view components, backend utilities, Mongoose
-            schemas, and TanStack Query hooks so future features have a clear
-            home instead of piling into pages.
-          </p>
-
-          <div className="mt-8 space-y-4">
-            {workflowPillars.map((pillar) => (
-              <div
-                key={pillar.title}
-                className="rounded-xl border border-base-300/70 bg-base-100/70 p-5"
-              >
-                <h3 className="text-lg font-semibold text-base-content">
-                  {pillar.title}
-                </h3>
-                <p className="mt-2 leading-7 text-base-content/68">
-                  {pillar.description}
-                </p>
-              </div>
-            ))}
-          </div>
+          <Link href="/workouts" className="btn btn-outline rounded-full px-6">
+            Browse all
+          </Link>
         </div>
 
-        <div className="glass-panel rounded-2xl border border-base-300/70 p-7 shadow-lg shadow-primary/5">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">
-                Structure snapshot
-              </p>
-              <h2 className="mt-2 font-display text-3xl font-semibold text-base-content">
-                Template folders added now
-              </h2>
-            </div>
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/12 text-primary">
-              <Blocks className="h-6 w-6" />
-            </div>
-          </div>
-
-          <div className="mt-6 rounded-xl bg-neutral p-5 text-sm text-neutral-content shadow-xl shadow-neutral/15">
-            <div className="space-y-2 font-mono">
-              {folderTree.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/register"
-              className="btn btn-secondary rounded-full px-6"
-            >
-              Start with register
-            </Link>
-            <Link
-              href="/dashboard"
-              className="btn btn-accent rounded-full px-6"
-            >
-              Open dashboard
-            </Link>
-            <Link href="/login" className="btn btn-outline rounded-full px-6">
-              Review login flow
-            </Link>
-          </div>
+        <div className="mt-8 grid gap-6 xl:grid-cols-2">
+          {workouts.slice(0, 10).map((workout) => (
+            <WorkoutCard key={workout.slug} workout={workout} />
+          ))}
         </div>
       </section>
     </div>
