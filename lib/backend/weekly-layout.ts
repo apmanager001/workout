@@ -64,7 +64,16 @@ function mapWorkout(workout: unknown): WeeklyLayoutWorkout | null {
     return null;
   }
 
-  const { _id, slug, name, type, equipment, targetMuscles, description, youtube } = workout;
+  const {
+    _id,
+    slug,
+    name,
+    type,
+    equipment,
+    targetMuscles,
+    description,
+    youtube,
+  } = workout;
 
   if (!_id || !slug || !name) {
     return null;

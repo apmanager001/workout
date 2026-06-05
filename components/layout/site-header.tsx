@@ -107,7 +107,7 @@ export function SiteHeader() {
                         Dashboard
                       </Link>
                     </li>
-                    
+
                     <li className="hover:bg-primary/40 rounded-xl">
                       <Link
                         href="/settings"
@@ -116,8 +116,8 @@ export function SiteHeader() {
                         <Settings2 className="h-4 w-4 text-accent-content" />
                         Settings
                       </Link>
-                    </li>{
-                    isAdmin ? (
+                    </li>
+                    {isAdmin ? (
                       <li className="hover:bg-primary/40 rounded-xl">
                         <Link
                           href="/admin"

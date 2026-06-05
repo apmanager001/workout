@@ -9,7 +9,6 @@ import {
 import { connectMongoose } from "./lib/backend/mongoose/connection";
 import { UserProfileModel } from "./lib/backend/mongoose/schemas/user-profile";
 
-
 const fallbackAuthSecret =
   "foundry-stack-dev-secret-change-me-before-production-2026";
 
@@ -45,7 +44,9 @@ export const auth = betterAuth({
       const profile = await UserProfileModel.findOne({ authUserId }).lean();
       const sessionUser = session.user as Record<string, unknown>;
       const sessionRoles = Array.isArray(sessionUser.roles)
-        ? sessionUser.roles.filter((role): role is string => typeof role === "string")
+        ? sessionUser.roles.filter(
+            (role): role is string => typeof role === "string",
+          )
         : undefined;
 
       return {
