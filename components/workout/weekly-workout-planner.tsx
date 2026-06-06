@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, GripVertical, Info, Plus, X } from "lucide-react";
+import { ArrowRight, GripVertical, Info, Plus, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatDate } from "@/components/ui/format";
 import { ModalPortal } from "@/components/ui/portal";
 import { UserWorkoutManager } from "@/components/workout/user-workout-manager";
+import Timer from "./timer";
+import EquipIcons from "./equipIcons";
 
 type WeeklyLayoutWorkout = {
   _id: string;
@@ -85,7 +87,10 @@ export function WeeklyWorkoutPlanner({
   ]);
   const [logNotes, setLogNotes] = useState("");
   const [logDuration, setLogDuration] = useState("");
-  const [logIntensity, setLogIntensity] = useState("");
+  const [logIntensity, setLogIntensity] = useState<number>(25);
+  const [isSavingLog, setIsSavingLog] = useState(false);
+  const [logDate, setLogDate] = useState(() => toIsoDate(new Date()));
+
   const [isAddWorkoutModalOpen, setIsAddWorkoutModalOpen] = useState(false);
 
   const fetchLayout = useCallback(async () => {
@@ -240,12 +245,14 @@ export function WeeklyWorkoutPlanner({
     setIsLogDrawerOpen(false);
   }
 
-  function openLogDrawer(workout: WeeklyLayoutWorkout) {
+  function openLogDrawer(workout: WeeklyLayoutWorkout, date: string) {
     setActiveLogToEdit(workout);
     setWeightSetLogs([{ reps: "", weight: "" }]);
     setLogNotes("");
     setLogDuration("");
-    setLogIntensity("");
+    setLogIntensity(50);
+    setLogDate(date);
+    setIsSavingLog(false);
     setIsLogDrawerOpen(true);
     setIsWishlistDrawerOpen(false);
   }
@@ -281,18 +288,23 @@ export function WeeklyWorkoutPlanner({
     );
   }
 
-  function handleSaveWorkoutLog() {
+  async function handleSaveWorkoutLog() {
     if (!activeLogToEdit) {
       closeLogDrawer();
       return;
     }
 
+    const date = `${logDate}T00:00:00.000Z`;
+    const notes = logNotes.trim();
+
     const payload =
       activeLogToEdit.type === "weight"
         ? {
             workoutId: activeLogToEdit._id,
-            type: "weight",
-            notes: logNotes.trim(),
+            type: "weight" as const,
+            date,
+            intensity: logIntensity,
+            notes,
             sets: weightSetLogs
               .map((set) => ({
                 reps: Number.parseInt(set.reps, 10),
@@ -308,17 +320,46 @@ export function WeeklyWorkoutPlanner({
           }
         : {
             workoutId: activeLogToEdit._id,
-            type: "cardio",
-            notes: logNotes.trim(),
+            type: "cardio" as const,
+            date,
+            intensity: logIntensity,
+            notes,
             duration: logDuration.trim(),
-            intensity: logIntensity.trim(),
           };
 
-    console.debug("Workout log payload", payload);
-    toast.success("Workout log captured. Connect API save next.");
+    if (payload.type === "weight" && payload.sets.length === 0) {
+      toast.error("Add at least one valid set before saving.");
+      return;
+    }
 
-    // TODO: connect this to the workout logging API later.
-    closeLogDrawer();
+    if (payload.type === "cardio" && payload.duration.length === 0) {
+      toast.error("Duration is required for cardio logs.");
+      return;
+    }
+
+    setIsSavingLog(true);
+
+    try {
+      const response = await fetch("/api/workout-logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const responsePayload = await response.json().catch(() => null);
+        throw new Error(
+          responsePayload?.error ?? "Unable to save workout log.",
+        );
+      }
+
+      toast.success("Workout log saved.");
+      closeLogDrawer();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setIsSavingLog(false);
+    }
   }
 
   function openAddWorkoutModal() {
@@ -331,6 +372,14 @@ export function WeeklyWorkoutPlanner({
     setIsAddWorkoutModalOpen(false);
     fetchLayout();
   }
+
+  const INTENSITY_LABELS: Record<number, string> = {
+    0: "Light",
+    25: "Moderate",
+    50: "Hard",
+    75: "Very Hard",
+    100: "Max",
+  };
 
   return (
     <div className="">
@@ -357,19 +406,19 @@ export function WeeklyWorkoutPlanner({
             return (
               <div
                 key={key}
-                className="p-4"
+                className="p-2"
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={(event) =>
                   handleDrop(event, dayOfWeek, dayWorkouts.length)
                 }
               >
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-base-content/45">
-                      {formatDate(key)}
-                    </p>
+                  <div className="flex items-center gap-2">
                     <p className="text-lg font-semibold text-base-content">
                       {DAY_NAMES[dayOfWeek]}
+                    </p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-base-content/45">
+                      {formatDate(key)}
                     </p>
                   </div>
                   <span className="badge badge-outline badge-sm rounded-full border-primary/20 bg-primary/5 text-primary">
@@ -426,11 +475,14 @@ export function WeeklyWorkoutPlanner({
                                 </div>
                               )}
                             </div>
+                            <div className="mt-3 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.24em] text-base-content/50">
+                              <EquipIcons equipment={workout.equipment} />
+                            </div>
                           </div>
                           <button
                             type="button"
                             className="btn btn-primary"
-                            onClick={() => openLogDrawer(workout)}
+                            onClick={() => openLogDrawer(workout, key)}
                           >
                             Log Workout
                           </button>
@@ -604,7 +656,11 @@ export function WeeklyWorkoutPlanner({
                     <h3 className="text-3xl font-semibold text-base-content">
                       {activeLogToEdit?.name ?? "Log Workout"}
                     </h3>
+                    <p className="mt-1 text-xs uppercase tracking-[0.2em] text-base-content/50">
+                      {formatDate(logDate)}
+                    </p>
                   </div>
+
                   <button
                     type="button"
                     className="btn btn-ghost btn-sm btn-circle"
@@ -615,8 +671,8 @@ export function WeeklyWorkoutPlanner({
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-
-                <div className="grid gap-4">
+                <Timer />
+                <div className="grid gap-4 justify-center">
                   {activeLogToEdit?.type === "weight" ? (
                     <div className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5">
                       <div className="flex items-center justify-between gap-3">
@@ -627,6 +683,7 @@ export function WeeklyWorkoutPlanner({
                           type="button"
                           className="btn btn-sm btn-outline"
                           onClick={addWeightSet}
+                          disabled={weightSetLogs.length >= 5}
                         >
                           <Plus className="h-4 w-4" />
                           Add set
@@ -643,12 +700,16 @@ export function WeeklyWorkoutPlanner({
                               Set {index + 1}
                             </div>
                             <div className="col-span-6 sm:col-span-4">
-                              <label className="label py-1">
+                              <label
+                                htmlFor={`reps-${index}`}
+                                className="label py-1"
+                              >
                                 <span className="label-text text-xs uppercase tracking-[0.2em] text-base-content/45">
                                   Reps
                                 </span>
                               </label>
                               <input
+                                id={`reps-${index}`}
                                 type="number"
                                 min={1}
                                 value={set.reps}
@@ -664,12 +725,16 @@ export function WeeklyWorkoutPlanner({
                               />
                             </div>
                             <div className="col-span-6 sm:col-span-4">
-                              <label className="label py-1">
+                              <label
+                                htmlFor={`weight-${index}`}
+                                className="label py-1"
+                              >
                                 <span className="label-text text-xs uppercase tracking-[0.2em] text-base-content/45">
                                   Weight
                                 </span>
                               </label>
                               <input
+                                id={`weight-${index}`}
                                 type="number"
                                 min={0}
                                 step="0.5"
@@ -688,11 +753,11 @@ export function WeeklyWorkoutPlanner({
                             <div className="col-span-12 sm:col-span-2">
                               <button
                                 type="button"
-                                className="btn btn-ghost btn-sm w-full"
+                                className="btn btn-ghost btn-sm w-full cursor-pointer"
                                 onClick={() => removeWeightSet(index)}
                                 disabled={weightSetLogs.length <= 1}
                               >
-                                Remove
+                                <Trash2 className="h-4 w-4 text-red-500 cursor-pointer" />
                               </button>
                             </div>
                           </div>
@@ -700,14 +765,15 @@ export function WeeklyWorkoutPlanner({
                       </div>
                     </div>
                   ) : (
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5">
-                        <label className="label">
+                    <div className="grid justify-center w-full gap-4">
+                      <div className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5 mt-4">
+                        <label htmlFor="duration" className="label">
                           <span className="label-text text-sm uppercase tracking-[0.24em] text-base-content/50">
                             Duration
                           </span>
                         </label>
                         <input
+                          id="duration"
                           type="text"
                           value={logDuration}
                           onChange={(event) =>
@@ -717,32 +783,50 @@ export function WeeklyWorkoutPlanner({
                           placeholder="e.g. 45 min"
                         />
                       </div>
-                      <div className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5">
-                        <label className="label">
-                          <span className="label-text text-sm uppercase tracking-[0.24em] text-base-content/50">
-                            Intensity
-                          </span>
-                        </label>
-                        <input
-                          type="text"
-                          value={logIntensity}
-                          onChange={(event) =>
-                            setLogIntensity(event.target.value)
-                          }
-                          className="input input-bordered w-full bg-base-100"
-                          placeholder="e.g. Moderate"
-                        />
-                      </div>
                     </div>
                   )}
-
+                  <div className="w-full rounded-3xl border border-base-300/70 bg-base-100/90 p-5">
+                    <label htmlFor="intensity" className="label">
+                      <span className="label-text text-sm uppercase tracking-[0.24em] text-base-content/50">
+                        Intensity
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      id="intensity"
+                      min={0}
+                      max={100}
+                      step={25}
+                      value={logIntensity}
+                      onChange={(e) => setLogIntensity(Number(e.target.value))}
+                      className="range"
+                    />
+                    <div className="flex justify-between px-2.5 mt-2 text-xs">
+                      <span>|</span>
+                      <span>|</span>
+                      <span>|</span>
+                      <span>|</span>
+                      <span>|</span>
+                    </div>
+                    <div className="flex justify-between px-2.5 mt-2 text-xs">
+                      <span>Light</span>
+                      <span>Moderate</span>
+                      <span>Hard</span>
+                      <span>Very Hard</span>
+                      <span>Max</span>
+                    </div>
+                    <div className="mt-3 text-center text-sm font-semibold text-primary">
+                      {INTENSITY_LABELS[logIntensity]}
+                    </div>
+                  </div>
                   <div className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5">
-                    <label className="label">
+                    <label htmlFor="notes" className="label">
                       <span className="label-text text-sm uppercase tracking-[0.24em] text-base-content/50">
                         Notes
                       </span>
                     </label>
                     <textarea
+                      id="notes"
                       value={logNotes}
                       onChange={(event) => setLogNotes(event.target.value)}
                       rows={5}
@@ -763,8 +847,9 @@ export function WeeklyWorkoutPlanner({
                       type="button"
                       className="btn btn-primary w-full sm:w-auto"
                       onClick={handleSaveWorkoutLog}
+                      disabled={isSavingLog}
                     >
-                      Save log
+                      {isSavingLog ? "Saving..." : "Save log"}
                     </button>
                   </div>
                 </div>

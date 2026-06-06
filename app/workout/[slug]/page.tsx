@@ -31,10 +31,7 @@ export default async function WorkoutPage({
 }: {
   params: { slug: string };
 }) {
-  console.log("Route params:", params);
-
   const workout = await getWorkoutBySlug(params.slug);
-  console.log(workout);
   if (!workout) {
     notFound();
   }
@@ -95,10 +92,9 @@ export default async function WorkoutPage({
           </div>
           <p className="mt-4 leading-7 text-base-content/75">
             This workout is ready to add to your schedule. The planner can later
-            switch the logging form based on whether it's cardio or weight.
+            switch the logging form based on whether it&apos;s cardio or weight.
           </p>
         </div>
-
         <div className="rounded-3xl border border-base-300/70 bg-base-100/80 p-8 shadow-xl shadow-primary/5">
           <div className="flex items-center gap-3 text-base-content/70">
             <List className="h-5 w-5" />

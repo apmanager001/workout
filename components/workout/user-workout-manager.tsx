@@ -167,6 +167,7 @@ export function UserWorkoutManager() {
         <label className="space-y-2">
           <span className="text-sm text-base-content/70">Date</span>
           <input
+            id="date"
             type="date"
             value={date}
             onChange={(event) => setDate(event.target.value)}

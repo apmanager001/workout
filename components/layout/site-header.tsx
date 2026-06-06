@@ -10,6 +10,7 @@ import {
   Settings2,
   Shield,
   LayoutDashboard,
+  Logs,
 } from "lucide-react";
 import { useState } from "react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
@@ -107,7 +108,15 @@ export function SiteHeader() {
                         Dashboard
                       </Link>
                     </li>
-
+                    <li className="hover:bg-primary/40 rounded-xl">
+                      <Link
+                        href="/logs"
+                        className="rounded-xl px-3 py-3 font-extrabold hover:text-white"
+                      >
+                        <Logs className="h-4 w-4 text-accent-content" />
+                        Logs
+                      </Link>
+                    </li>
                     <li className="hover:bg-primary/40 rounded-xl">
                       <Link
                         href="/settings"
@@ -168,7 +177,7 @@ export function SiteHeader() {
 
           {isMenuOpen ? (
             <div className="border-t border-base-300/60 px-4 pb-4 pt-3 md:hidden">
-              <div className="flex flex-col gap-2">
+              {/* <div className="flex flex-col gap-2">
                 {siteConfig.nav.map((item) => {
                   const active = isActive(pathname, item.href);
 
@@ -188,7 +197,47 @@ export function SiteHeader() {
                     </Link>
                   );
                 })}
-              </div>
+              </div> */}
+              <ul tabIndex={0}>
+                <li className="hover:bg-primary/40 rounded-xl">
+                  <Link
+                    href="/dashboard"
+                    className="rounded-xl px-3 py-3 font-extrabold hover:text-white flex items-center gap-2"
+                  >
+                    <LayoutDashboard className="h-4 w-4 text-accent-content" />
+                    Dashboard
+                  </Link>
+                </li>
+                <li className="hover:bg-primary/40 rounded-xl">
+                  <Link
+                    href="/logs"
+                    className="rounded-xl px-3 py-3 font-extrabold hover:text-white flex items-center gap-2"
+                  >
+                    <Logs className="h-4 w-4 text-accent-content" />
+                    Logs
+                  </Link>
+                </li>
+                <li className="hover:bg-primary/40 rounded-xl">
+                  <Link
+                    href="/settings"
+                    className="rounded-xl px-3 py-3 font-extrabold hover:text-white flex items-center gap-2"
+                  >
+                    <Settings2 className="h-4 w-4 text-accent-content" />
+                    Settings
+                  </Link>
+                </li>
+                {isAdmin ? (
+                  <li className="hover:bg-primary/40 rounded-xl">
+                    <Link
+                      href="/admin"
+                      className="rounded-xl px-3 py-3 font-extrabold hover:text-white flex items-center gap-2"
+                    >
+                      <Shield className="h-4 w-4 text-accent-content" />
+                      Admin
+                    </Link>
+                  </li>
+                ) : null}
+              </ul>
 
               <div className="mt-4 border-t border-base-300/60 pt-4">
                 {isPending ? null : isAuthenticated ? (

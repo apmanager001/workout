@@ -20,17 +20,17 @@ function getAuthUserId(
   return session.user.id ?? session.user.email ?? "";
 }
 
-async function getSessionUserId() {
-  const session = await requireServerSession();
-  const authUserId = getAuthUserId(session);
-  if (!authUserId) {
-    return NextResponse.json(
-      { error: "Unable to resolve user identity." },
-      { status: 401 },
-    );
-  }
-  return authUserId;
-}
+// async function getSessionUserId() {
+//   const session = await requireServerSession();
+//   const authUserId = getAuthUserId(session);
+//   if (!authUserId) {
+//     return NextResponse.json(
+//       { error: "Unable to resolve user identity." },
+//       { status: 401 },
+//     );
+//   }
+//   return authUserId;
+// }
 
 export async function GET() {
   const session = await requireServerSession();
