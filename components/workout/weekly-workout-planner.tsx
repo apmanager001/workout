@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, GripVertical, Info, Plus, Trash2, X } from "lucide-react";
+import { IoBodyOutline } from "react-icons/io5";
 import toast from "react-hot-toast";
 import { formatDate } from "@/components/ui/format";
 import { ModalPortal } from "@/components/ui/portal";
@@ -92,6 +93,9 @@ export function WeeklyWorkoutPlanner({
   const [logDate, setLogDate] = useState(() => toIsoDate(new Date()));
 
   const [isAddWorkoutModalOpen, setIsAddWorkoutModalOpen] = useState(false);
+  const [addWorkoutDayOfWeek, setAddWorkoutDayOfWeek] = useState(
+    new Date().getDay(),
+  );
 
   const fetchLayout = useCallback(async () => {
     setIsLoading(true);
@@ -239,6 +243,34 @@ export function WeeklyWorkoutPlanner({
     event.dataTransfer.effectAllowed = "move";
   }
 
+  async function removeWorkoutFromSchedule(
+    dayOfWeek: number,
+    workoutIndex: number,
+  ) {
+    const updatedLayout = layoutDays.map((day) => {
+      if (day.dayOfWeek !== dayOfWeek) {
+        return day;
+      }
+
+      return {
+        ...day,
+        workouts: day.workouts.filter((_, index) => index !== workoutIndex),
+      };
+    });
+
+    setLayoutDays(updatedLayout);
+
+    try {
+      await patchLayout(updatedLayout);
+      toast.success("Workout removed from schedule.");
+    } catch (err) {
+      const message = (err as Error).message;
+      setError(message);
+      toast.error(message);
+      fetchLayout();
+    }
+  }
+
   function openWorkoutDetailsDrawer(workout: WeeklyLayoutWorkout) {
     setDrawerWorkout(workout);
     setIsWishlistDrawerOpen(true);
@@ -362,7 +394,8 @@ export function WeeklyWorkoutPlanner({
     }
   }
 
-  function openAddWorkoutModal() {
+  function openAddWorkoutModal(dayOfWeek: number) {
+    setAddWorkoutDayOfWeek(dayOfWeek);
     setIsAddWorkoutModalOpen(true);
     setIsWishlistDrawerOpen(false);
     closeLogDrawer();
@@ -422,7 +455,7 @@ export function WeeklyWorkoutPlanner({
                     </p>
                   </div>
                   <span className="badge badge-outline badge-sm rounded-full border-primary/20 bg-primary/5 text-primary">
-                    {dayWorkouts.length}
+                    {dayWorkouts.length} / 6
                   </span>
                 </div>
 
@@ -444,7 +477,7 @@ export function WeeklyWorkoutPlanner({
                         className="group cursor-grab rounded-3xl border border-base-300/60 bg-base-100/95 p-4 transition hover:-translate-y-0.5"
                       >
                         <div className="flex items-center justify-between gap-4">
-                          <div>
+                          <div className="flex-4 md:flex-2">
                             <div className="flex gap-2">
                               <GripVertical />
                               <button
@@ -479,13 +512,24 @@ export function WeeklyWorkoutPlanner({
                               <EquipIcons equipment={workout.equipment} />
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={() => openLogDrawer(workout, key)}
-                          >
-                            Log Workout
-                          </button>
+                          <div className="flex-2 md:flex-1 flex flex-col gap-2 w-full">
+                            <button
+                              type="button"
+                              className="btn btn-error btn-xs md:btn-md w-full"
+                              onClick={() =>
+                                removeWorkoutFromSchedule(dayOfWeek, index)
+                              }
+                            >
+                              Remove Workout
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-xs md:btn-md"
+                              onClick={() => openLogDrawer(workout, key)}
+                            >
+                              Log Workout
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))
@@ -495,7 +539,7 @@ export function WeeklyWorkoutPlanner({
                   <button
                     type="button"
                     className="border border-dashed border-base-300/40 mt-4 flex items-center justify-center rounded-3xl p-4 text-sm text-base-content/50 transition-colors hover:border-primary/60 cursor-pointer w-full"
-                    onClick={openAddWorkoutModal}
+                    onClick={() => openAddWorkoutModal(dayOfWeek)}
                   >
                     <Plus />
                     <span className="ml-2 text-sm text-base-content/50">
@@ -589,6 +633,9 @@ export function WeeklyWorkoutPlanner({
                         Open full view
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </a>
+                    </div>
+                    <div className="flex items-center justify-center my-4">
+                      <IoBodyOutline className="h-32 w-32 text-accent" />
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5">
@@ -751,14 +798,16 @@ export function WeeklyWorkoutPlanner({
                               />
                             </div>
                             <div className="col-span-12 sm:col-span-2">
-                              <button
-                                type="button"
-                                className="btn btn-ghost btn-sm w-full cursor-pointer"
-                                onClick={() => removeWeightSet(index)}
-                                disabled={weightSetLogs.length <= 1}
-                              >
-                                <Trash2 className="h-4 w-4 text-red-500 cursor-pointer" />
-                              </button>
+                              {weightSetLogs.length > 1 && (
+                                <button
+                                  type="button"
+                                  className="btn btn-ghost btn-sm w-full cursor-pointer"
+                                  onClick={() => removeWeightSet(index)}
+                                  disabled={weightSetLogs.length <= 1}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-500 cursor-pointer" />
+                                </button>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -868,7 +917,9 @@ export function WeeklyWorkoutPlanner({
                     >
                       <X className="h-4 w-4" />
                     </button>
-                    <UserWorkoutManager />
+                    <UserWorkoutManager
+                      defaultDayOfWeek={addWorkoutDayOfWeek}
+                    />
                   </div>
                 </div>
               </div>

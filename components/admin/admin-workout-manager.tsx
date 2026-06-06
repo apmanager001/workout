@@ -40,26 +40,39 @@ export function AdminWorkoutManager() {
   const [success, setSuccess] = useState<string | null>(null);
 
   async function fetchWorkouts() {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/workouts");
-      if (!response.ok) {
-        throw new Error("Unable to load workouts.");
-      }
-      setWorkouts(await response.json());
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setIsLoading(false);
+    const response = await fetch("/api/workouts");
+    if (!response.ok) {
+      throw new Error("Unable to load workouts.");
     }
+    return response.json();
   }
 
-  useEffect(() => {
-    fetchWorkouts();
-  }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function load() {
+      try {
+        if (isMounted) {
+          setIsLoading(true);
+          setError(null);
+        }
+
+        const data = await fetchWorkouts();
+        if (isMounted) setWorkouts(data);
+      } catch (err) {
+        if (isMounted) setError((err as Error).message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    load();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   function updateField(field: keyof AdminWorkoutForm, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
   }

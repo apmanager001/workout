@@ -1,28 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import { Loader2, Plus, Sparkles } from "lucide-react";
-
-type WeeklyLayoutWorkout = {
-  _id: string;
-  name: string;
-  type: "weight" | "cardio";
-};
-
-type WeeklyLayoutDay = {
-  dayOfWeek: number;
-  workouts: WeeklyLayoutWorkout[];
-};
-
-type WeeklyLayoutResponse = {
-  startDay: number;
-  days: WeeklyLayoutDay[];
-};
 
 type WorkoutOption = {
   _id: string;
   name: string;
   slug: string;
+  equipment: string[];
+  targetMuscles: string[];
 };
 
 const DAY_NAMES = [
@@ -35,67 +22,87 @@ const DAY_NAMES = [
   "Saturday",
 ];
 
-export function UserWorkoutManager() {
-  const [layoutDays, setLayoutDays] = useState<WeeklyLayoutDay[]>([]);
+export function UserWorkoutManager({
+  defaultDayOfWeek,
+}: {
+  defaultDayOfWeek?: number;
+}) {
   const [workouts, setWorkouts] = useState<WorkoutOption[]>([]);
   const [selectedWorkout, setSelectedWorkout] = useState("");
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState(
+    () => defaultDayOfWeek ?? new Date().getDay(),
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedEquipment, setSelectedEquipment] = useState("all");
+  const [selectedMuscle, setSelectedMuscle] = useState("all");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingWorkouts, setIsLoadingWorkouts] = useState(true);
 
-  const assignedWorkouts = useMemo(() => {
-    return layoutDays.flatMap((day) =>
-      day.workouts.map((workout, index) => ({
-        key: `${day.dayOfWeek}-${index}-${workout._id}`,
-        dayOfWeek: day.dayOfWeek,
-        workout,
-      })),
-    );
-  }, [layoutDays]);
+  const equipmentOptions = useMemo(() => {
+    return Array.from(new Set(workouts.flatMap((workout) => workout.equipment)))
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
+  }, [workouts]);
 
-  async function fetchLayout() {
-    setIsLoading(true);
-    try {
-      const startDay = new Date().getDay();
-      const response = await fetch(
-        `/api/user-weekly-layout?startDay=${startDay}`,
-      );
-      if (!response.ok) {
-        throw new Error("Unable to load weekly layout.");
-      }
-      const data = (await response.json()) as WeeklyLayoutResponse;
-      setLayoutDays(Array.isArray(data.days) ? data.days : []);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const muscleOptions = useMemo(() => {
+    return Array.from(
+      new Set(workouts.flatMap((workout) => workout.targetMuscles)),
+    )
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
+  }, [workouts]);
 
-  async function fetchWorkoutOptions() {
-    setIsLoadingWorkouts(true);
-    try {
-      const response = await fetch("/api/workouts");
-      if (!response.ok) {
-        throw new Error("Unable to load workout options.");
-      }
-      const data = (await response.json()) as WorkoutOption[];
-      setWorkouts(data);
-      if (!selectedWorkout && data.length > 0) {
-        setSelectedWorkout(data[0]._id);
-      }
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setIsLoadingWorkouts(false);
+  const filteredWorkouts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return workouts.filter((workout) => {
+      const matchesName = workout.name.toLowerCase().includes(query);
+      const matchesEquipment =
+        selectedEquipment === "all" ||
+        workout.equipment.some(
+          (equipment) => equipment.toLowerCase() === selectedEquipment,
+        );
+      const matchesMuscle =
+        selectedMuscle === "all" ||
+        workout.targetMuscles.some(
+          (muscle) => muscle.toLowerCase() === selectedMuscle,
+        );
+
+      return (query === "" || matchesName) && matchesEquipment && matchesMuscle;
+    });
+  }, [workouts, searchQuery, selectedEquipment, selectedMuscle]);
+
+  const selectedWorkoutId = useMemo(() => {
+    if (
+      selectedWorkout &&
+      filteredWorkouts.some((workout) => workout._id === selectedWorkout)
+    ) {
+      return selectedWorkout;
     }
-  }
+
+    return filteredWorkouts.length > 0 ? filteredWorkouts[0]._id : "";
+  }, [filteredWorkouts, selectedWorkout]);
 
   useEffect(() => {
-    fetchLayout();
-    fetchWorkoutOptions();
+    void (async () => {
+      setIsLoadingWorkouts(true);
+      try {
+        const response = await fetch("/api/workouts");
+        if (!response.ok) {
+          throw new Error("Unable to load workout options.");
+        }
+        const data = (await response.json()) as WorkoutOption[];
+        setWorkouts(data);
+        if (data.length > 0) {
+          setSelectedWorkout((prevSelected) => prevSelected || data[0]._id);
+        }
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setIsLoadingWorkouts(false);
+      }
+    })();
   }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -104,19 +111,14 @@ export function UserWorkoutManager() {
     setIsSaving(true);
 
     try {
-      const parsedDate = new Date(`${date}T00:00:00`);
-      if (Number.isNaN(parsedDate.getTime())) {
-        throw new Error("Please select a valid date.");
-      }
-
       const response = await fetch("/api/user-weekly-layout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          workoutId: selectedWorkout,
-          dayOfWeek: parsedDate.getDay(),
+          workoutId: selectedWorkoutId,
+          dayOfWeek: selectedDayOfWeek,
         }),
       });
 
@@ -124,8 +126,7 @@ export function UserWorkoutManager() {
         const errorData = await response.json().catch(() => null);
         throw new Error(errorData?.error ?? "Unable to add workout.");
       }
-
-      await fetchLayout();
+      toast.success("Workout added to your schedule!");
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -144,50 +145,119 @@ export function UserWorkoutManager() {
         </div>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="mt-6 grid gap-4 sm:grid-cols-[1.4fr_1fr]"
-      >
-        <label className="space-y-2">
-          <span className="text-sm text-base-content/70">Workout</span>
-          <select
-            value={selectedWorkout}
-            onChange={(event) => setSelectedWorkout(event.target.value)}
-            disabled={isLoadingWorkouts}
-            className="select w-full rounded-3xl border border-base-300/70 bg-base-100/90"
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label htmlFor="search" className="space-y-2">
+            <span className="text-sm text-base-content/70">
+              Search workouts
+            </span>
+            <input
+              id="search"
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search by name, muscle, or equipment"
+              className="input w-full rounded-3xl border border-base-300/70 bg-base-100/90"
+            />
+          </label>
+
+          <label htmlFor="equipment" className="space-y-2">
+            <span className="text-sm text-base-content/70">Equipment</span>
+            <select
+              id="equipment"
+              value={selectedEquipment}
+              onChange={(event) => setSelectedEquipment(event.target.value)}
+              disabled={isLoadingWorkouts}
+              className="select w-full rounded-3xl border border-base-300/70 bg-base-100/90"
+            >
+              <option value="all">All equipment</option>
+              {equipmentOptions.map((equipment) => (
+                <option key={equipment} value={equipment.toLowerCase()}>
+                  {equipment}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label htmlFor="muscle" className="space-y-2">
+            <span className="text-sm text-base-content/70">Target muscle</span>
+            <select
+              id="muscle"
+              value={selectedMuscle}
+              onChange={(event) => setSelectedMuscle(event.target.value)}
+              disabled={isLoadingWorkouts}
+              className="select w-full rounded-3xl border border-base-300/70 bg-base-100/90"
+            >
+              <option value="all">All muscles</option>
+              {muscleOptions.map((muscle) => (
+                <option key={muscle} value={muscle.toLowerCase()}>
+                  {muscle}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label htmlFor="dayOfWeek" className="space-y-2">
+            <span className="text-sm text-base-content/70">Day of week</span>
+            <select
+              id="dayOfWeek"
+              value={selectedDayOfWeek}
+              onChange={(event) =>
+                setSelectedDayOfWeek(Number(event.target.value))
+              }
+              className="select w-full rounded-3xl border border-base-300/70 bg-base-100/90"
+            >
+              {DAY_NAMES.map((dayName, index) => (
+                <option key={dayName} value={index}>
+                  {dayName}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-[1.4fr_1fr] items-end">
+          <label htmlFor="workout" className="space-y-2">
+            <span className="text-sm text-base-content/70">Workout</span>
+            <select
+              value={selectedWorkoutId}
+              id="workout"
+              onChange={(event) => setSelectedWorkout(event.target.value)}
+              disabled={isLoadingWorkouts || filteredWorkouts.length === 0}
+              className="select w-full rounded-3xl border border-base-300/70 bg-base-100/90"
+            >
+              {filteredWorkouts.map((workout) => (
+                <option key={workout._id} value={workout._id}>
+                  {workout.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            type="submit"
+            disabled={isSaving || !selectedWorkoutId}
+            className="btn btn-primary rounded-full px-6"
           >
-            {workouts.map((workout) => (
-              <option key={workout._id} value={workout._id}>
-                {workout.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm text-base-content/70">Date</span>
-          <input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            className="input w-full rounded-3xl border border-base-300/70 bg-base-100/90"
-          />
-        </label>
-
-        <button
-          type="submit"
-          disabled={isSaving || !selectedWorkout}
-          className="btn btn-primary rounded-full px-6"
-        >
-          {isSaving ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Plus className="mr-2 h-4 w-4" />
-          )}
-          Add workout
-        </button>
+            {isSaving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="mr-2 h-4 w-4" />
+            )}
+            Add workout
+          </button>
+        </div>
       </form>
+
+      <p className="mt-3 text-sm text-base-content/70">
+        {filteredWorkouts.length > 0
+          ? `Showing ${filteredWorkouts.length} matching workout${
+              filteredWorkouts.length === 1 ? "" : "s"
+            }.`
+          : "No workouts match those filters."}
+      </p>
 
       {error ? (
         <p className="mt-4 rounded-2xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">
@@ -195,7 +265,7 @@ export function UserWorkoutManager() {
         </p>
       ) : null}
 
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <h3 className="text-base font-semibold text-base-content">
           Current weekly assignments
         </h3>
@@ -230,7 +300,7 @@ export function UserWorkoutManager() {
             ))}
           </div>
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -99,6 +99,14 @@ export default function Page() {
     });
   }, [logs, selectedWorkoutId]);
 
+   const INTENSITY_LABELS: Record<number, string> = {
+     0: "Light",
+     25: "Moderate",
+     50: "Hard",
+     75: "Very Hard",
+     100: "Max",
+   };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8 rounded-3xl border border-base-300/70 bg-base-100/90 p-6 shadow-sm">
@@ -160,7 +168,7 @@ export default function Page() {
                 className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5 shadow-sm"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
+                  <div className="flex-2">
                     <p className="text-xl font-semibold text-base-content">
                       {workoutName}
                     </p>
@@ -168,8 +176,39 @@ export default function Page() {
                       {formatDate(log.date)} • {workoutType}
                     </p>
                   </div>
-                  <div className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-semibold text-primary">
-                    Intensity {log.intensity}%
+                  <div className="flex-1 w-full rounded-3xl border border-base-300/70 bg-base-100/90 p-5">
+                    <label htmlFor="intensity" className="label">
+                      <span className="label-text text-sm uppercase tracking-[0.24em] text-base-content/50">
+                        Intensity
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      id="intensity"
+                      min={0}
+                      max={100}
+                      step={25}
+                      value={log.intensity}
+                      className="range cursor-not-allowed range-primary"
+                      readOnly
+                    />
+                    <div className="flex justify-between px-2.5 mt-2 text-xs">
+                      <span>|</span>
+                      <span>|</span>
+                      <span>|</span>
+                      <span>|</span>
+                      <span>|</span>
+                    </div>
+                    <div className="flex justify-between px-2.5 mt-2 text-xs">
+                      <span>Light</span>
+                      <span>Moderate</span>
+                      <span>Hard</span>
+                      <span>Very Hard</span>
+                      <span>Max</span>
+                    </div>
+                    <div className="mt-3 text-center text-sm font-semibold text-primary">
+                      {INTENSITY_LABELS[log.intensity]}
+                    </div>
                   </div>
                 </div>
 
@@ -201,7 +240,7 @@ export default function Page() {
                         Cardio duration
                       </p>
                       <p className="mt-3 text-base-content">
-                        {log.duration ?? "—"}
+                        {log.duration ?? "—"} Minutes
                       </p>
                     </div>
                   )}

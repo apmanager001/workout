@@ -26,24 +26,24 @@ const Timer = () => {
     setIsRunning((prev) => !prev);
   };
 
-  // Countdown effect
   useEffect(() => {
-    if (isRunning && timeLeft > 0) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((t) => t - 1);
-      }, 1000);
+    if (!isRunning) {
+      clearInterval(intervalRef.current!);
+      return;
     }
+
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          setIsRunning(false);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
 
     return () => clearInterval(intervalRef.current!);
   }, [isRunning]);
-
-  // Stop when reaching 0
-  useEffect(() => {
-    if (timeLeft === 0) {
-      setIsRunning(false);
-      clearInterval(intervalRef.current!);
-    }
-  }, [timeLeft]);
 
   return (
     <div className="rounded-3xl border border-base-300/70 bg-base-100/90 flex justify-center  gap-4 p-5">
