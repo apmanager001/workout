@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, GripVertical, Info, Plus, Trash2, X } from "lucide-react";
-import { IoBodyOutline } from "react-icons/io5";
+// import { IoBodyOutline } from "react-icons/io5";
 import toast from "react-hot-toast";
 import { formatDate } from "@/components/ui/format";
 import { ModalPortal } from "@/components/ui/portal";
 import { UserWorkoutManager } from "@/components/workout/user-workout-manager";
+import  MuscleHighlight  from "@/components/workout/muscleHighlight";
 import Timer from "./timer";
 import EquipIcons from "./equipIcons";
 
@@ -512,7 +513,7 @@ export function WeeklyWorkoutPlanner({
                               <EquipIcons equipment={workout.equipment} />
                             </div>
                           </div>
-                          <div className="flex-2 md:flex-1 flex flex-col gap-2 w-full">
+                          <div className="flex-2 md:flex-1 flex flex-col justify-between gap-6 md:gap-4 max-w-42">
                             <button
                               type="button"
                               className="btn btn-error btn-xs md:btn-md w-full"
@@ -605,7 +606,7 @@ export function WeeklyWorkoutPlanner({
                 className="min-h-full"
               >
                 {drawerWorkout ? (
-                  <div className="space-y-4">
+                  <div className="space-y-4 mb-24">
                     <div className="flex flex-col gap-3 sm:items-end sm:justify-between">
                       <div className="flex items-center gap-3 text-secondary">
                         <div>
@@ -634,8 +635,12 @@ export function WeeklyWorkoutPlanner({
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </a>
                     </div>
-                    <div className="flex items-center justify-center my-4">
-                      <IoBodyOutline className="h-32 w-32 text-accent" />
+                    <div className="flex items-center justify-center my-2 ">
+                      {/* <IoBodyOutline className="h-24 w-24 text-accent" /> */}
+                      <MuscleHighlight
+                        targetMuscles={drawerWorkout.targetMuscles}
+                        className="h-96 w-96 text-accent"
+                      />
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5">
@@ -723,7 +728,7 @@ export function WeeklyWorkoutPlanner({
                   {activeLogToEdit?.type === "weight" ? (
                     <div className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5">
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm uppercase tracking-[0.24em] text-base-content/50">
+                        <p className="text-xs md:text-sm uppercase tracking-[0.24em] text-base-content/50">
                           Sets (reps and weight)
                         </p>
                         <button
@@ -741,73 +746,75 @@ export function WeeklyWorkoutPlanner({
                         {weightSetLogs.map((set, index) => (
                           <div
                             key={`set-${index + 1}`}
-                            className="grid grid-cols-12 items-end gap-2"
+                            className="flex flex-col justify-center gap-2"
                           >
-                            <div className="col-span-12 sm:col-span-2 text-sm text-base-content/60">
+                            <div className="text-sm text-base-content/60">
                               Set {index + 1}
                             </div>
-                            <div className="col-span-6 sm:col-span-4">
-                              <label
-                                htmlFor={`reps-${index}`}
-                                className="label py-1"
-                              >
-                                <span className="label-text text-xs uppercase tracking-[0.2em] text-base-content/45">
-                                  Reps
-                                </span>
-                              </label>
-                              <input
-                                id={`reps-${index}`}
-                                type="number"
-                                min={1}
-                                value={set.reps}
-                                onChange={(event) =>
-                                  updateWeightSet(
-                                    index,
-                                    "reps",
-                                    event.target.value,
-                                  )
-                                }
-                                className="input input-bordered w-full bg-base-100"
-                                placeholder="e.g. 10"
-                              />
-                            </div>
-                            <div className="col-span-6 sm:col-span-4">
-                              <label
-                                htmlFor={`weight-${index}`}
-                                className="label py-1"
-                              >
-                                <span className="label-text text-xs uppercase tracking-[0.2em] text-base-content/45">
-                                  Weight
-                                </span>
-                              </label>
-                              <input
-                                id={`weight-${index}`}
-                                type="number"
-                                min={0}
-                                step="0.5"
-                                value={set.weight}
-                                onChange={(event) =>
-                                  updateWeightSet(
-                                    index,
-                                    "weight",
-                                    event.target.value,
-                                  )
-                                }
-                                className="input input-bordered w-full bg-base-100"
-                                placeholder="e.g. 135"
-                              />
-                            </div>
-                            <div className="col-span-12 sm:col-span-2">
-                              {weightSetLogs.length > 1 && (
-                                <button
-                                  type="button"
-                                  className="btn btn-ghost btn-sm w-full cursor-pointer"
-                                  onClick={() => removeWeightSet(index)}
-                                  disabled={weightSetLogs.length <= 1}
+                            <div className="flex gap-3">
+                              <div className="flex flex-col">
+                                <label
+                                  htmlFor={`reps-${index}`}
+                                  className="label py-1"
                                 >
-                                  <Trash2 className="h-4 w-4 text-red-500 cursor-pointer" />
-                                </button>
-                              )}
+                                  <span className="label-text text-xs uppercase tracking-[0.2em] text-base-content/45">
+                                    Reps
+                                  </span>
+                                </label>
+                                <input
+                                  id={`reps-${index}`}
+                                  type="number"
+                                  min={1}
+                                  value={set.reps}
+                                  onChange={(event) =>
+                                    updateWeightSet(
+                                      index,
+                                      "reps",
+                                      event.target.value,
+                                    )
+                                  }
+                                  className="input input-bordered w-24 md:w-full bg-base-100"
+                                  placeholder="e.g. 10"
+                                />
+                              </div>
+                              <div className="col-span-6 sm:col-span-4 flex flex-col">
+                                <label
+                                  htmlFor={`weight-${index}`}
+                                  className="label py-1"
+                                >
+                                  <span className="label-text text-xs uppercase tracking-[0.2em] text-base-content/45">
+                                    Weight
+                                  </span>
+                                </label>
+                                <input
+                                  id={`weight-${index}`}
+                                  type="number"
+                                  min={0}
+                                  step="0.5"
+                                  value={set.weight}
+                                  onChange={(event) =>
+                                    updateWeightSet(
+                                      index,
+                                      "weight",
+                                      event.target.value,
+                                    )
+                                  }
+                                  className="input input-bordered w-24 md:w-full bg-base-100"
+                                  placeholder="e.g. 135"
+                                />
+                              </div>
+                              <div className="flex items-center justify-end w-full">
+                                {weightSetLogs.length > 1 && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost btn-sm cursor-pointer"
+                                    onClick={() => removeWeightSet(index)}
+                                    disabled={weightSetLogs.length <= 1}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-red-500 cursor-pointer" />
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -884,7 +891,7 @@ export function WeeklyWorkoutPlanner({
                     />
                   </div>
 
-                  <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+                  <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end mb-24">
                     <button
                       type="button"
                       className="btn btn-ghost w-full sm:w-auto"

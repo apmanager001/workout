@@ -52,7 +52,7 @@ const Timer = () => {
         <input
           type="number"
           id="minutes"
-          className="input input-bordered input-sm max-w-10 text-center"
+          className="input input-bordered input-sm max-w-12 text-center"
           placeholder="Minutes"
           value={inputMinutes}
           onChange={(e) => setInputMinutes(Number(e.target.value))}
