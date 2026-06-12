@@ -6,6 +6,7 @@ import {
   Copy,
   GripVertical,
   Info,
+  Logs,
   Plus,
   Trash2,
   X,
@@ -597,62 +598,84 @@ export function WeeklyWorkoutPlanner({
                         }
                         onDragOver={(event) => event.preventDefault()}
                         onDrop={(event) => handleDrop(event, dayOfWeek, index)}
-                        className="group cursor-grab rounded-3xl border border-base-300/60 bg-base-100/95 p-4 transition hover:-translate-y-0.5"
+                        className="group relative overflow-hidden cursor-grab rounded-3xl border border-base-300/60 bg-base-100/95 transition hover:-translate-y-0.5"
                       >
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex-4 md:flex-2">
-                            <div className="flex gap-2">
-                              <GripVertical />
-                              <button
-                                type="button"
-                                className="text-left w-full flex gap-2 cursor-pointer items-center"
-                                onClick={() =>
-                                  openWorkoutDetailsDrawer(workout)
-                                }
-                              >
-                                <p className="font-semibold text-base-content cursor-pointer">
-                                  {workout.name}
-                                </p>
-                                <Info className="hidden md:block" />
-                              </button>
-                            </div>
-                            <div className="mt-3 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.24em] text-base-content/50">
-                              {/* <span>{workout.targetMuscles}</span> */}
-                              {workout.targetMuscles.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                  {workout.targetMuscles.map((muscle) => (
-                                    <span
-                                      key={muscle}
-                                      className="badge badge-xs md:badge-md badge-outline border-secondary/20 bg-secondary/5 text-secondary whitespace-normal leading-snug py-2"
-                                    >
-                                      {muscle}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                            <div className="mt-3 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.24em] text-base-content/50">
-                              <EquipIcons equipment={workout.equipment} />
+                        <div className="absolute inset-y-0 right-0 z-20 hidden items-center justify-center bg-base-100/95 transition-transform duration-300 ease-out translate-x-full opacity-0 pointer-events-none sm:flex group-hover:translate-x-0 group-hover:opacity-100 group-hover:pointer-events-auto">
+                          <button
+                            type="button"
+                            className="tooltip tooltip-left h-full w-24 bg-error flex justify-center items-center cursor-pointer"
+                            data-tip="Remove workout"
+                            onClick={() =>
+                              removeWorkoutFromSchedule(dayOfWeek, index)
+                            }
+                          >
+                            <Trash2 className="h-10 w-10" />
+                          </button>
+                          <button
+                            type="button"
+                            className="tooltip tooltip-left h-full w-24 bg-primary flex justify-center items-center cursor-pointer"
+                            data-tip="Log workout"
+                            onClick={() => openLogDrawer(workout, key)}
+                          >
+                            <Logs className="h-10 w-10" />
+                            {/* <ArrowRight className="h-4 w-4" /> */}
+                          </button>
+                        </div>
+                        <div className="relative z-10 w-full bg-base-100 p-4 sm:pr-44">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-4 md:flex-2 min-w-0">
+                              <div className="flex gap-2">
+                                <GripVertical />
+                                <button
+                                  type="button"
+                                  className="text-left w-full flex gap-2 cursor-pointer items-center"
+                                  onClick={() =>
+                                    openWorkoutDetailsDrawer(workout)
+                                  }
+                                >
+                                  <p className="font-semibold text-base-content cursor-pointer">
+                                    {workout.name}
+                                  </p>
+                                  <Info className="hidden md:block" />
+                                </button>
+                              </div>
+                              <div className="mt-3 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.24em] text-base-content/50">
+                                {workout.targetMuscles.length > 0 && (
+                                  <div className="flex flex-wrap gap-2">
+                                    {workout.targetMuscles.map((muscle) => (
+                                      <span
+                                        key={muscle}
+                                        className="badge badge-xs md:badge-md badge-outline border-secondary/20 bg-secondary/5 text-secondary whitespace-normal leading-snug py-2"
+                                      >
+                                        {muscle}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="mt-3 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.24em] text-base-content/50">
+                                <EquipIcons equipment={workout.equipment} />
+                              </div>
                             </div>
                           </div>
-                          <div className="flex-2 md:flex-1 flex flex-col justify-between gap-6 md:gap-4 max-w-42">
-                            <button
-                              type="button"
-                              className="btn btn-error btn-xs md:btn-md w-full"
-                              onClick={() =>
-                                removeWorkoutFromSchedule(dayOfWeek, index)
-                              }
-                            >
-                              Remove Workout
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-primary btn-xs md:btn-md"
-                              onClick={() => openLogDrawer(workout, key)}
-                            >
-                              Log Workout
-                            </button>
-                          </div>
+                        </div>
+                        <div className="mt-4 flex flex-col md:flex-row gap-3 sm:hidden px-4 pb-4">
+                          <button
+                            type="button"
+                            className="btn btn-error btn-xs w-full"
+                            onClick={() =>
+                              removeWorkoutFromSchedule(dayOfWeek, index)
+                            }
+                          >
+                            Remove Workout
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-xs w-full"
+                            onClick={() => openLogDrawer(workout, key)}
+                          >
+                            Log Workout
+                          </button>
                         </div>
                       </div>
                     ))
