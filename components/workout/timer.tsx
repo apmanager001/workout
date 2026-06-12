@@ -46,7 +46,7 @@ const Timer = () => {
   }, [isRunning]);
 
   return (
-    <div className="rounded-3xl border border-base-300/70 bg-base-100/90 flex justify-center  gap-4 p-5">
+    <div className="rounded-3xl border border-base-300/70 bg-base-100/90 flex justify-center my-4 gap-4 p-5">
       {/* Input */}
       <div className="flex items-center justify-center gap-3">
         <input

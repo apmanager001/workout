@@ -1,13 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, GripVertical, Info, Plus, Trash2, X } from "lucide-react";
+import {
+  ArrowRight,
+  Copy,
+  GripVertical,
+  Info,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 // import { IoBodyOutline } from "react-icons/io5";
 import toast from "react-hot-toast";
 import { formatDate } from "@/components/ui/format";
 import { ModalPortal } from "@/components/ui/portal";
 import { UserWorkoutManager } from "@/components/workout/user-workout-manager";
-import  MuscleHighlight  from "@/components/workout/muscleHighlight";
+import MuscleHighlight from "@/components/workout/muscleHighlight";
 import Timer from "./timer";
 import EquipIcons from "./equipIcons";
 
@@ -35,6 +43,28 @@ type WeeklyLayoutResponse = {
 type WeightSetLog = {
   reps: string;
   weight: string;
+};
+
+type WeightSet = {
+  reps: number;
+  weight: number;
+};
+
+type WorkoutLog = {
+  _id: string;
+  workoutId:
+    | string
+    | {
+        _id: string;
+        name?: string;
+        type?: "weight" | "cardio";
+      };
+  type: "weight" | "cardio";
+  date: string;
+  intensity: number;
+  notes?: string;
+  sets?: WeightSet[];
+  duration?: string;
 };
 
 type WeeklyWorkoutPlannerProps = {
@@ -92,6 +122,15 @@ export function WeeklyWorkoutPlanner({
   const [logIntensity, setLogIntensity] = useState<number>(25);
   const [isSavingLog, setIsSavingLog] = useState(false);
   const [logDate, setLogDate] = useState(() => toIsoDate(new Date()));
+  const [previousWorkoutLog, setPreviousWorkoutLog] =
+    useState<WorkoutLog | null>(null);
+  const [isFetchingPreviousWorkoutLog, setIsFetchingPreviousWorkoutLog] =
+    useState(false);
+  const [previousWorkoutLogError, setPreviousWorkoutLogError] = useState<
+    string | null
+  >(null);
+  const [isPreviousWorkoutLogVisible, setIsPreviousWorkoutLogVisible] =
+    useState(false);
 
   const [isAddWorkoutModalOpen, setIsAddWorkoutModalOpen] = useState(false);
   const [addWorkoutDayOfWeek, setAddWorkoutDayOfWeek] = useState(
@@ -286,6 +325,9 @@ export function WeeklyWorkoutPlanner({
     setLogIntensity(50);
     setLogDate(date);
     setIsSavingLog(false);
+    setPreviousWorkoutLog(null);
+    setPreviousWorkoutLogError(null);
+    setIsPreviousWorkoutLogVisible(false);
     setIsLogDrawerOpen(true);
     setIsWishlistDrawerOpen(false);
   }
@@ -293,6 +335,39 @@ export function WeeklyWorkoutPlanner({
   function closeLogDrawer() {
     setIsLogDrawerOpen(false);
     setActiveLogToEdit(null);
+  }
+
+  async function loadPreviousWorkoutLog() {
+    if (!activeLogToEdit) {
+      return;
+    }
+
+    setPreviousWorkoutLogError(null);
+    setIsFetchingPreviousWorkoutLog(true);
+    setIsPreviousWorkoutLogVisible(true);
+
+    try {
+      const response = await fetch(
+        `/api/workout-logs?workoutId=${encodeURIComponent(
+          activeLogToEdit._id,
+        )}&limit=1`,
+      );
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(
+          payload?.error ?? "Unable to load previous workout log.",
+        );
+      }
+
+      const logs = (await response.json()) as WorkoutLog[];
+      setPreviousWorkoutLog(logs.length > 0 ? logs[0] : null);
+    } catch (err) {
+      setPreviousWorkoutLogError((err as Error).message);
+      setPreviousWorkoutLog(null);
+    } finally {
+      setIsFetchingPreviousWorkoutLog(false);
+    }
   }
 
   function addWeightSet() {
@@ -407,6 +482,34 @@ export function WeeklyWorkoutPlanner({
     fetchLayout();
   }
 
+  async function copyWorkoutNames() {
+    const lines: string[] = [];
+
+    weekDates.forEach((date) => {
+      const dayOfWeek = date.getDay();
+      const dayLayout = layoutDays.find((day) => day.dayOfWeek === dayOfWeek);
+      const workouts = dayLayout?.workouts.filter(
+        (workout) => workout.name.trim().length > 0,
+      );
+
+      workouts?.forEach((workout) => {
+        lines.push(`${DAY_NAMES[dayOfWeek]}: ${workout.name}`);
+      });
+    });
+
+    if (lines.length === 0) {
+      toast.error("No workout names available to copy.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      toast.success("Workout names copied to clipboard.");
+    } catch (error) {
+      toast.error("Unable to copy workout names.");
+    }
+  }
+
   const INTENSITY_LABELS: Record<number, string> = {
     0: "Light",
     25: "Moderate",
@@ -417,6 +520,25 @@ export function WeeklyWorkoutPlanner({
 
   return (
     <div className="">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-lg font-semibold text-base-content">
+            Weekly workout planner
+          </p>
+          <p className="text-sm text-base-content/60">
+            Copy the current schedule workout names for easy sharing.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="btn btn-outline btn-sm inline-flex items-center gap-2"
+          onClick={copyWorkoutNames}
+          disabled={weekDates.length === 0}
+        >
+          <Copy className="h-4 w-4" />
+          Copy Schedule
+        </button>
+      </div>
       {error ? (
         <p className="mt-4 rounded-2xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">
           {error}
@@ -456,7 +578,7 @@ export function WeeklyWorkoutPlanner({
                     </p>
                   </div>
                   <span className="badge badge-outline badge-sm rounded-full border-primary/20 bg-primary/5 text-primary">
-                    {dayWorkouts.length} / 6
+                    {dayWorkouts.length} / 7
                   </span>
                 </div>
 
@@ -536,7 +658,7 @@ export function WeeklyWorkoutPlanner({
                     ))
                   )}
                 </div>
-                {dayWorkouts.length <= 5 && (
+                {dayWorkouts.length <= 6 && (
                   <button
                     type="button"
                     className="border border-dashed border-base-300/40 mt-4 flex items-center justify-center rounded-3xl p-4 text-sm text-base-content/50 transition-colors hover:border-primary/60 cursor-pointer w-full"
@@ -700,7 +822,7 @@ export function WeeklyWorkoutPlanner({
               ].join(" ")}
             >
               <div className="min-h-full">
-                <div className="flex items-center justify-between gap-3 pb-4">
+                <div className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.24em] text-secondary">
                       Log workout details
@@ -712,7 +834,6 @@ export function WeeklyWorkoutPlanner({
                       {formatDate(logDate)}
                     </p>
                   </div>
-
                   <button
                     type="button"
                     className="btn btn-ghost btn-sm btn-circle"
@@ -723,7 +844,95 @@ export function WeeklyWorkoutPlanner({
                     <X className="h-4 w-4" />
                   </button>
                 </div>
+                <div className="flex items-center justify-end gap-2 mx-4">
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={loadPreviousWorkoutLog}
+                    disabled={isPreviousWorkoutLogVisible}
+                  >
+                    {isFetchingPreviousWorkoutLog
+                      ? "Loading last session..."
+                      : "Show last session"}
+                  </button>
+                </div>
                 <Timer />
+                {isPreviousWorkoutLogVisible ? (
+                  <div className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5 my-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.24em] text-base-content/50">
+                          Previous session
+                        </p>
+                        {previousWorkoutLog ? (
+                          <p className="mt-1 text-sm text-base-content/70">
+                            {formatDate(previousWorkoutLog.date)}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {previousWorkoutLogError ? (
+                      <p className="mt-4 text-sm text-error">
+                        {previousWorkoutLogError}
+                      </p>
+                    ) : null}
+
+                    {!previousWorkoutLogError &&
+                    !previousWorkoutLog &&
+                    !isFetchingPreviousWorkoutLog ? (
+                      <p className="mt-4 text-sm text-base-content/70">
+                        No previous workout logs found.
+                      </p>
+                    ) : null}
+
+                    {previousWorkoutLog ? (
+                      <div className="mt-4 space-y-4">
+                        {previousWorkoutLog.type === "weight" ? (
+                          <div className="space-y-3">
+                            <p className="text-sm uppercase tracking-[0.24em] text-base-content/50">
+                              Sets
+                            </p>
+                            <div className="space-y-2">
+                              {previousWorkoutLog.sets?.map((set, index) => (
+                                <div
+                                  key={`previous-set-${index}`}
+                                  className="flex items-center justify-between rounded-2xl bg-base-200/50 p-3"
+                                >
+                                  <span className="text-sm text-base-content">
+                                    Set {index + 1}
+                                  </span>
+                                  <span className="text-sm text-base-content/70">
+                                    {set.reps} reps • {set.weight} lbs
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <p className="text-sm uppercase tracking-[0.24em] text-base-content/50">
+                              Duration
+                            </p>
+                            <p className="text-base-content">
+                              {previousWorkoutLog.duration ?? "—"} Minutes
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="space-y-3">
+                          <p className="text-sm uppercase tracking-[0.24em] text-base-content/50">
+                            Notes
+                          </p>
+                          <p className="text-base-content">
+                            {previousWorkoutLog.notes?.trim() ||
+                              "No notes added."}
+                          </p>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
                 <div className="grid gap-4 justify-center">
                   {activeLogToEdit?.type === "weight" ? (
                     <div className="rounded-3xl border border-base-300/70 bg-base-100/90 p-5">
