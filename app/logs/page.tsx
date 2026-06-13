@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { formatDate } from "@/components/ui/format";
+import Calendar from 'react-fill-calendar'
+import './style.css'
 
 type WorkoutInfo = {
   _id: string;
@@ -99,7 +101,21 @@ export default function Page() {
     });
   }, [logs, selectedWorkoutId]);
 
-   const INTENSITY_LABELS: Record<number, string> = {
+  const selectedDates = useMemo(() => {
+    const dateSet = new Set<string>();
+
+    filteredLogs.forEach((log) => {
+      const date = new Date(log.date);
+      const day = date.getUTCDate();
+      const month = date.getUTCMonth() + 1;
+      const year = date.getUTCFullYear();
+      dateSet.add(`${year}-${month}-${day}`);
+    });
+
+    return Array.from(dateSet).map((day) => ({ day }));
+  }, [filteredLogs]);
+
+  const INTENSITY_LABELS: Record<number, string> = {
      0: "Light",
      25: "Moderate",
      50: "Hard",
@@ -112,14 +128,27 @@ export default function Page() {
       <div className="mb-8 rounded-3xl border border-base-300/70 bg-base-100/90 p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.24em] text-base-content/50">
+            <p className="text-sm uppercase tracking-[0.24em] text-base-content/50 pb-2">
               Workout log history
             </p>
-            <h1 className="mt-2 text-3xl font-semibold text-base-content">
+            {/* <h1 className="mt-2 text-3xl font-semibold text-base-content">
               Workout logs
-            </h1>
-          </div>
-
+            </h1> */}
+          
+          <Calendar
+              fillingColor="#50C878"
+              borderfillColor="#27592D"
+              hoverborderColor="#FFCCCB"
+              cellBorderColor="#808080"
+              cellColor="#ADADAD"
+              legend={true}
+              mainBorder={true}
+              title='Workout Logs'
+              borderColor="#708090"
+              textColor="#708090"
+              selectedDates={selectedDates}
+            />
+            </div>
           <div className="w-full max-w-sm sm:w-auto">
             <label className="space-y-2">
               <span className="text-sm text-base-content/70">
@@ -139,6 +168,7 @@ export default function Page() {
               </select>
             </label>
           </div>
+           
         </div>
       </div>
 

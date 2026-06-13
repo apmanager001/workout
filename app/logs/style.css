@@ -1,0 +1,333 @@
+/* Spinning rainbow border animation (used for today's habit cell & legend) */
+@keyframes rainbow-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rainbow-spin {
+  animation: rainbow-spin 4s linear infinite;
+}
+
+/* Shared helpers for today cell border + hover variables */
+.today-cell-btn {
+  border-color: transparent;
+}
+
+.today-cell-btn:hover {
+  border-color: var(--border-fill-color);
+}
+
+.hover-border-var {
+  /* default border color, can be overridden via CSS variable */
+  border-color: var(--border-color, transparent);
+}
+
+.hover-border-var:hover {
+  border-color: var(--hover-border-color);
+}
+
+/* ------------------------- Calendar layout ------------------------- */
+
+.fc-calendar {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.fc-main-border {
+  border: 1px solid;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.fc-legend {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  gap: 4px;
+}
+
+.fc-legend-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.fc-legend-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.fc-color-box {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+}
+
+.fc-rainbow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.fc-color-inner {
+  position: absolute;
+  inset: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+.fc-base-button {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background-clip: padding-box;
+}
+
+.fc-rounded-square {
+  border-radius: 6px;
+}
+
+.fc-rounded-circle {
+  border-radius: 9999px;
+}
+
+.fc-legend-completed {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.fc-legend-completed .fc-base-button {
+  width: 16px;
+  height: 16px;
+}
+
+.fc-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fc-row {
+  display: flex;
+  gap: 4px;
+}
+
+/* --------------------------- Tooltips --------------------------- */
+
+.fc-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fc-tooltip-text {
+  position: absolute;
+  z-index: 50;
+  white-space: nowrap;
+  background: rgba(32, 32, 32, 0.95);
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  line-height: 1;
+  transform-origin: center;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    visibility 120ms;
+  pointer-events: none;
+}
+
+.fc-tooltip:hover .fc-tooltip-text {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* top (default) */
+.fc-tooltip-top .fc-tooltip-text {
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, -6px) scale(0.95);
+}
+
+.fc-tooltip-top:hover .fc-tooltip-text {
+  transform: translate(-50%, -8px) scale(1);
+}
+
+/* bottom */
+.fc-tooltip-bottom .fc-tooltip-text {
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 6px) scale(0.95);
+}
+
+.fc-tooltip-bottom:hover .fc-tooltip-text {
+  transform: translate(-50%, 8px) scale(1);
+}
+
+/* left */
+.fc-tooltip-left .fc-tooltip-text {
+  right: 100%;
+  top: 50%;
+  transform: translate(-6px, -50%) scale(0.95);
+}
+
+.fc-tooltip-left:hover .fc-tooltip-text {
+  transform: translate(-8px, -50%) scale(1);
+}
+
+/* right */
+.fc-tooltip-right .fc-tooltip-text {
+  left: 100%;
+  top: 50%;
+  transform: translate(6px, -50%) scale(0.95);
+}
+
+.fc-tooltip-right:hover .fc-tooltip-text {
+  transform: translate(8px, -50%) scale(1);
+}
+
+/* small arrow using pseudo-element */
+.fc-tooltip-text::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(32, 32, 32, 0.95);
+  transform: rotate(45deg);
+}
+
+.fc-tooltip-top .fc-tooltip-text::after {
+  left: 50%;
+  bottom: -4px;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.fc-tooltip-bottom .fc-tooltip-text::after {
+  left: 50%;
+  top: -4px;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.fc-tooltip-left .fc-tooltip-text::after {
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.fc-tooltip-right .fc-tooltip-text::after {
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* --------------------------- Day cells --------------------------- */
+
+.fc-day-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-color, transparent);
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+  background: transparent;
+}
+
+.fc-day-button:hover {
+  transform: scale(1.5);
+}
+
+.fc-cursor-pointer {
+  cursor: pointer;
+}
+
+.fc-full {
+  width: 100%;
+  height: 100%;
+}
+
+.fc-today-wrap {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+}
+
+.fc-today-inner {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  height: 16px;
+  width: 16px;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+/* ensure rainbow sits behind and inner button/border is transparent */
+.fc-today-wrap .fc-rainbow {
+  z-index: 0;
+  border-radius: 50%;
+}
+
+.fc-today-wrap .fc-today-inner {
+  z-index: 1;
+}
+
+.fc-today-inner .fc-day-button {
+  width: 100%;
+  height: 100%;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  box-sizing: border-box;
+  background-clip: padding-box;
+}
+
+/* box-sizing reset for predictable sizing inside cells */
+.fc-day-button,
+.fc-today-inner,
+.fc-color-inner {
+  box-sizing: border-box;
+}
+
+.hc-download-inner {
+  position: relative;
+  display: inline-block;
+}
+
+.hc-download-footer {
+  position: absolute;
+  right: 4px;
+  bottom: 6px; /* overlap calendar border a bit more */
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9ca3af; /* soft gray that fits dark background */
+  z-index: 10;
+  pointer-events: none;
+}

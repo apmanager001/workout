@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Copy,
@@ -137,6 +137,108 @@ export function WeeklyWorkoutPlanner({
   const [addWorkoutDayOfWeek, setAddWorkoutDayOfWeek] = useState(
     new Date().getDay(),
   );
+  const [activeSwipeKey, setActiveSwipeKey] = useState<string | null>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const swipeStartX = useRef<number | null>(null);
+  const swipePointerId = useRef<number | null>(null);
+
+  const SWIPE_MAX_OFFSET = 110;
+  const SWIPE_THRESHOLD = 50;
+
+  function getCardKey(
+    dayOfWeek: number,
+    index: number,
+    workout: WeeklyLayoutWorkout,
+  ) {
+    return `${dayOfWeek}-${index}-${workout._id}`;
+  }
+
+  function handleMobileSwipeStart(
+    event: React.PointerEvent<HTMLDivElement>,
+    cardKey: string,
+  ) {
+    if (event.pointerType !== "touch") {
+      return;
+    }
+
+    swipeStartX.current = event.clientX;
+    swipePointerId.current = event.pointerId;
+    setActiveSwipeKey(cardKey);
+    setSwipeOffset(0);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleMobileSwipeMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (
+      event.pointerType !== "touch" ||
+      swipePointerId.current !== event.pointerId ||
+      swipeStartX.current === null ||
+      activeSwipeKey === null
+    ) {
+      return;
+    }
+
+    const deltaX = event.clientX - swipeStartX.current;
+    const nextOffset = Math.max(
+      -SWIPE_MAX_OFFSET,
+      Math.min(SWIPE_MAX_OFFSET, deltaX),
+    );
+
+    setSwipeOffset(nextOffset);
+  }
+
+  function finishMobileSwipe() {
+    if (activeSwipeKey === null) {
+      setSwipeOffset(0);
+      return;
+    }
+
+    if (swipeOffset <= -SWIPE_THRESHOLD) {
+      setSwipeOffset(-SWIPE_MAX_OFFSET);
+      return;
+    }
+
+    if (swipeOffset >= SWIPE_THRESHOLD) {
+      setSwipeOffset(SWIPE_MAX_OFFSET);
+      return;
+    }
+
+    setActiveSwipeKey(null);
+    setSwipeOffset(0);
+  }
+
+  function handleMobileSwipeEnd(event: React.PointerEvent<HTMLDivElement>) {
+    if (
+      event.pointerType !== "touch" ||
+      swipePointerId.current !== event.pointerId
+    ) {
+      return;
+    }
+
+    finishMobileSwipe();
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    swipeStartX.current = null;
+    swipePointerId.current = null;
+  }
+
+  function handleMobileSwipeCancel(event: React.PointerEvent<HTMLDivElement>) {
+    if (
+      event.pointerType !== "touch" ||
+      swipePointerId.current !== event.pointerId
+    ) {
+      return;
+    }
+
+    setActiveSwipeKey(null);
+    setSwipeOffset(0);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    swipeStartX.current = null;
+    swipePointerId.current = null;
+  }
 
   const fetchLayout = useCallback(async () => {
     setIsLoading(true);
@@ -340,6 +442,11 @@ export function WeeklyWorkoutPlanner({
 
   async function loadPreviousWorkoutLog() {
     if (!activeLogToEdit) {
+      return;
+    }
+
+    if (isPreviousWorkoutLogVisible) {
+      setIsPreviousWorkoutLogVisible(false);
       return;
     }
 
@@ -618,10 +725,28 @@ export function WeeklyWorkoutPlanner({
                             onClick={() => openLogDrawer(workout, key)}
                           >
                             <Logs className="h-10 w-10" />
-                            {/* <ArrowRight className="h-4 w-4" /> */}
                           </button>
                         </div>
-                        <div className="relative z-10 w-full bg-base-100 p-4 sm:pr-44">
+                        <div
+                          className="relative z-10 w-full bg-base-100 p-4 sm:pr-44 transition-transform duration-200 ease-out"
+                          style={{
+                            transform:
+                              activeSwipeKey ===
+                              getCardKey(dayOfWeek, index, workout)
+                                ? `translateX(${swipeOffset}px)`
+                                : "translateX(0)",
+                            touchAction: "pan-y",
+                          }}
+                          onPointerDown={(event) =>
+                            handleMobileSwipeStart(
+                              event,
+                              getCardKey(dayOfWeek, index, workout),
+                            )
+                          }
+                          onPointerMove={handleMobileSwipeMove}
+                          onPointerUp={handleMobileSwipeEnd}
+                          onPointerCancel={handleMobileSwipeCancel}
+                        >
                           <div className="flex items-start gap-4">
                             <div className="flex-4 md:flex-2 min-w-0">
                               <div className="flex gap-2">
@@ -659,22 +784,24 @@ export function WeeklyWorkoutPlanner({
                             </div>
                           </div>
                         </div>
-                        <div className="mt-4 flex flex-col md:flex-row gap-3 sm:hidden px-4 pb-4">
+                        <div className="absolute inset-y-0 left-0 z-0 flex items-center  sm:hidden">
                           <button
                             type="button"
-                            className="btn btn-error btn-xs w-full"
+                            className="h-full w-24 bg-error flex justify-center items-center"
                             onClick={() =>
                               removeWorkoutFromSchedule(dayOfWeek, index)
                             }
                           >
-                            Remove Workout
+                            <Trash2 className="h-10 w-10" />
                           </button>
+                        </div>
+                        <div className="absolute inset-y-0 right-0 z-0 flex items-center sm:hidden">
                           <button
                             type="button"
-                            className="btn btn-primary btn-xs w-full"
+                            className="h-full w-24 bg-primary flex justify-center items-center"
                             onClick={() => openLogDrawer(workout, key)}
                           >
-                            Log Workout
+                            <Logs className="h-10 w-10" />
                           </button>
                         </div>
                       </div>
@@ -845,7 +972,7 @@ export function WeeklyWorkoutPlanner({
               ].join(" ")}
             >
               <div className="min-h-full">
-                <div className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex gap-4 pb-4 items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.24em] text-secondary">
                       Log workout details
@@ -870,13 +997,15 @@ export function WeeklyWorkoutPlanner({
                 <div className="flex items-center justify-end gap-2 mx-4">
                   <button
                     type="button"
-                    className="btn btn-outline btn-sm"
+                    className="btn btn-primary btn-soft btn-sm"
                     onClick={loadPreviousWorkoutLog}
-                    disabled={isPreviousWorkoutLogVisible}
+                    disabled={isFetchingPreviousWorkoutLog}
                   >
                     {isFetchingPreviousWorkoutLog
                       ? "Loading last session..."
-                      : "Show last session"}
+                      : isPreviousWorkoutLogVisible
+                        ? "Hide last session"
+                        : "Show last session"}
                   </button>
                 </div>
                 <Timer />
