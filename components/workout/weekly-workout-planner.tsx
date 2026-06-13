@@ -612,7 +612,7 @@ export function WeeklyWorkoutPlanner({
 
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
-      toast.success("Workout names copied to clipboard.");
+      toast.success("Workouts copied to clipboard.");
     } catch (error) {
       toast.error("Unable to copy workout names.");
     }
@@ -628,7 +628,7 @@ export function WeeklyWorkoutPlanner({
 
   return (
     <div className="">
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mx-2 sm:mx-0">
         <div>
           <p className="text-lg font-semibold text-base-content">
             Weekly workout planner
@@ -637,15 +637,17 @@ export function WeeklyWorkoutPlanner({
             Copy the current schedule workout names for easy sharing.
           </p>
         </div>
-        <button
-          type="button"
-          className="btn btn-outline btn-sm inline-flex items-center gap-2"
-          onClick={copyWorkoutNames}
-          disabled={weekDates.length === 0}
-        >
-          <Copy className="h-4 w-4" />
-          Copy Schedule
-        </button>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            className="btn btn-primary btn-soft btn-sm inline-flex items-center gap-2 max-w-40"
+            onClick={copyWorkoutNames}
+            disabled={weekDates.length === 0}
+          >
+            <Copy className="h-4 w-4" />
+            Copy Schedule
+          </button>
+        </div>
       </div>
       {error ? (
         <p className="mt-4 rounded-2xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">

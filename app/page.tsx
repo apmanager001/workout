@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -72,18 +73,18 @@ const homeJsonLd = [
 
 export default function Home() {
   return (
-    <div className="pb-24 pt-6 sm:pt-8 lg:pt-12">
+    <div className="pb-24 pt-6 px-2 sm:px-0 sm:pt-8 lg:pt-12">
       <JsonLd data={homeJsonLd} />
       <section className="section-shell grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
         <div className="space-y-8">
           <div className="badge badge-outline badge-lg gap-2 rounded-full border-primary/30 bg-base-100/80 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">
             <Sparkles className="h-4 w-4" />
-            Workout planner built on a strong app shell
+            Workout planner
           </div>
 
           <div className="space-y-5">
             <h1 className="text-balance font-display text-5xl font-semibold tracking-tight text-base-content sm:text-6xl lg:text-7xl">
-              Track your training week with modern workout flow.
+              Track your weekly training.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-base-content/72 sm:text-xl">
               Workout Forge brings workout scheduling, a public exercise
@@ -125,9 +126,20 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative flex flex-col items-center justify-center gap-6">
           <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-primary/20 via-transparent to-secondary/20 blur-3xl" />
-          <div className="glass-panel relative overflow-hidden rounded-2xl border border-base-300/70 p-6 shadow-[0_30px_120px_-44px_color-mix(in_oklab,var(--color-primary)_45%,transparent)] sm:p-7">
+
+          <div className="relative mx-auto w-full max-w-md rounded-4xl border border-base-300/60 bg-base-100/70 p-4 shadow-2xl shadow-primary/10 ring-1 ring-base-300/40">
+            <Image
+              src="/splash.png"
+              alt="Workout Forge mobile splash"
+              width={640}
+              height={480}
+              className="w-full rounded-3xl object-contain"
+            />
+          </div>
+
+          {/* <div className="glass-panel relative overflow-hidden rounded-2xl border border-base-300/70 p-6 shadow-[0_30px_120px_-44px_color-mix(in_oklab,var(--color-primary)_45%,transparent)] sm:p-7">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">
@@ -162,7 +174,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-          </div>
+          </div>*/}
         </div>
       </section>
 

@@ -14,7 +14,7 @@ export default async function WorkoutsPage() {
   const workouts = await getAllWorkouts();
 
   return (
-    <section className="section-shell py-10 lg:py-14">
+    <section className="section-shell py-10 lg:py-14 ">
       <div className="mx-auto max-w-4xl space-y-6 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">
           Workout library
@@ -28,7 +28,7 @@ export default async function WorkoutsPage() {
         </p>
       </div>
 
-      <div className="mt-10 grid gap-6 md:grid-cols-2">
+      <div className="mt-10 grid gap-6 md:grid-cols-2 mx-2 sm:mx-0">
         {workouts.map((workout) => (
           <WorkoutCard key={workout.slug} workout={workout} />
         ))}
